@@ -1,0 +1,1912 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RoleSplit - App de Roles</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+  body { background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+  .container { max-width: 600px; margin: 0 auto; padding: 16px; padding-bottom: 100px; }
+
+  header { text-align: center; padding: 24px 0 20px; }
+  header h1 {
+    font-size: 28px;
+    background: linear-gradient(135deg, #10b981, #3b82f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 900;
+  }
+  header p { color: #94a3b8; font-size: 14px; margin-top: 6px; }
+
+  .card {
+    background: #1e293b; border-radius: 16px; padding: 16px;
+    margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+  .card h2 { font-size: 16px; margin-bottom: 12px; color: #f1f5f9; }
+
+  .input-group { margin-bottom: 12px; }
+  label { display: block; font-size: 12px; color: #94a3b8; margin-bottom: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  input, select, textarea {
+    width: 100%; padding: 12px; border-radius: 10px;
+    border: 1px solid #334155; background: #0f172a; color: #e2e8f0;
+    font-size: 16px; outline: none; transition: border 0.2s; font-family: inherit;
+  }
+  input:focus, select:focus, textarea:focus { border-color: #10b981; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  .btn {
+    width: 100%; padding: 14px; border-radius: 12px; border: none;
+    font-size: 16px; font-weight: 700; cursor: pointer; transition: transform 0.1s;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+  .btn-secondary { background: #334155; color: #e2e8f0; margin-top: 8px; }
+  .btn-whats { background: linear-gradient(135deg, #25d366, #128c7e); color: white; }
+  .btn-email { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; }
+  .btn-share { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; }
+  .btn-danger { background: #ef4444; color: white; padding: 6px 12px; width: auto; font-size: 12px; border-radius: 8px; }
+  .btn-mini { background: #334155; color: #e2e8f0; padding: 6px 10px; width: auto; font-size: 13px; border-radius: 8px; font-weight: 600; }
+  .btn-pago { background: #10b981; color: white; padding: 6px 12px; width: auto; font-size: 12px; border-radius: 8px; font-weight: 700; }
+
+  /* Botão grande criar role */
+  .btn-criar-grande {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    width: 100%; padding: 18px; border-radius: 16px; border: 2px dashed #10b981;
+    background: rgba(16, 185, 129, 0.08); color: #10b981;
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    transition: all 0.2s; margin-bottom: 20px;
+  }
+  .btn-criar-grande:hover { background: rgba(16, 185, 129, 0.15); }
+  .btn-criar-grande .icone { font-size: 24px; }
+
+  .convite-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .convite-grid .btn { padding: 12px 8px; font-size: 13px; }
+  .convite-grid .btn.full { grid-column: span 2; }
+
+  .codigo-box {
+    background: #0f172a; border: 2px dashed #10b981; border-radius: 12px;
+    padding: 20px; text-align: center; margin: 12px 0;
+  }
+  .codigo-box .codigo {
+    font-size: 32px; font-weight: 900; letter-spacing: 4px;
+    color: #10b981; font-family: 'Courier New', monospace;
+  }
+  .codigo-box .label-codigo { font-size: 12px; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px; }
+
+  .link-box {
+    background: #0f172a; border-radius: 10px; padding: 12px;
+    font-size: 12px; color: #94a3b8; word-break: break-all;
+    margin-top: 8px; border: 1px solid #334155;
+  }
+
+  .evento-card {
+    background: #0f172a; border-radius: 12px; padding: 16px;
+    margin-bottom: 10px; border-left: 4px solid #10b981;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .evento-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.3); }
+  .evento-card:active { transform: scale(0.99); }
+  .evento-card .titulo { font-size: 16px; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+  .evento-card .info { font-size: 12px; color: #94a3b8; }
+  .evento-card .data-info { font-size: 13px; color: #3b82f6; margin-top: 6px; font-weight: 600; }
+
+  .check-participantes { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; }
+  .check-item {
+    display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+    background: #0f172a; border-radius: 8px; cursor: pointer;
+    border: 1px solid #334155; transition: all 0.2s; font-size: 14px;
+  }
+  .check-item.ativo { border-color: #10b981; background: rgba(16, 185, 129, 0.1); }
+  .check-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: #10b981; cursor: pointer; flex-shrink: 0; }
+
+  .resumo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .resumo-item { background: #0f172a; padding: 10px; border-radius: 10px; text-align: center; }
+  .resumo-item .label { font-size: 11px; color: #94a3b8; text-transform: uppercase; }
+  .resumo-item .valor { font-size: 18px; font-weight: 800; margin-top: 4px; }
+  .valor.total { color: #3b82f6; }
+  .valor.cota { color: #f59e0b; }
+  .valor.pessoas { color: #8b5cf6; }
+
+  .gasto-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px; background: #0f172a; border-radius: 10px;
+    margin-bottom: 8px; border-left: 3px solid #10b981; gap: 8px;
+  }
+  .gasto-info { flex: 1; min-width: 0; }
+  .gasto-info .nome { font-weight: 600; font-size: 14px; word-wrap: break-word; }
+  .gasto-info .pagador { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+  .gasto-info .participantes-info { font-size: 11px; color: #64748b; margin-top: 2px; }
+  .gasto-valor { font-weight: 700; color: #10b981; white-space: nowrap; }
+
+  .saldo-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px; border-radius: 10px; margin-bottom: 8px; font-weight: 600; gap: 8px;
+  }
+  .saldo-receber { background: rgba(16, 185, 129, 0.15); color: #10b981; border-left: 3px solid #10b981; }
+  .saldo-pagar { background: rgba(239, 68, 68, 0.15); color: #ef4444; border-left: 3px solid #ef4444; }
+  .saldo-ok { background: rgba(148, 163, 184, 0.15); color: #94a3b8; border-left: 3px solid #94a3b8; }
+  .saldo-pago { background: rgba(16, 185, 129, 0.08); color: #10b981; border-left: 3px solid #10b981; opacity: 0.75; }
+  .saldo-pago .valor-saldo { text-decoration: line-through; opacity: 0.7; }
+
+  .empty {
+    text-align: center; color: #64748b; padding: 32px 20px; font-size: 14px;
+  }
+  .empty .emoji { font-size: 48px; display: block; margin-bottom: 12px; opacity: 0.7; }
+
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; margin-left: 6px; }
+
+  .acerto-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 12px; background: #0f172a; border-radius: 10px;
+    margin-bottom: 6px; font-size: 14px; border-left: 3px solid #3b82f6;
+    gap: 8px;
+  }
+  .acerto-item.pago {
+    opacity: 0.6;
+    border-left-color: #10b981;
+    background: rgba(16, 185, 129, 0.08);
+  }
+  .acerto-item.pago .quem,
+  .acerto-item.pago .valor-acerto {
+    text-decoration: line-through;
+  }
+  .acerto-item .quem { color: #94a3b8; flex: 1; }
+  .acerto-item .valor-acerto { color: #3b82f6; font-weight: 700; white-space: nowrap; }
+  .acerto-item.pago .valor-acerto { color: #10b981; }
+  .badge-pago {
+    background: #10b981; color: white; padding: 2px 8px;
+    border-radius: 6px; font-size: 10px; font-weight: 700;
+    text-transform: uppercase; white-space: nowrap;
+  }
+  .info-pago {
+    font-size: 10px; color: #64748b; margin-top: 2px;
+    white-space: nowrap;
+  }
+
+  .topbar { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .topbar button {
+    background: #334155; border: none; color: white;
+    padding: 8px 12px; border-radius: 8px; cursor: pointer;
+    font-size: 14px; font-weight: 600;
+  }
+
+  .abas { display: flex; gap: 4px; margin-bottom: 12px; background: #0f172a; padding: 4px; border-radius: 10px; }
+  .aba {
+    flex: 1; padding: 10px 6px; text-align: center; border-radius: 8px;
+    cursor: pointer; font-size: 13px; font-weight: 600; color: #94a3b8;
+    transition: all 0.2s; border: none; background: transparent;
+  }
+  .aba.ativa { background: #10b981; color: white; }
+
+  .tela { display: none; }
+  .tela.ativa { display: block; }
+
+  .escondido { display: none !important; }
+
+  /* Modais */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+    display: none; align-items: center; justify-content: center;
+    padding: 16px; z-index: 100;
+    animation: fadeIn 0.15s ease-out;
+  }
+  .modal-overlay.ativo { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .modal {
+    background: #1e293b; border-radius: 20px; padding: 20px;
+    max-width: 420px; width: 100%; max-height: 90vh; overflow-y: auto;
+    animation: slideUp 0.2s ease-out;
+    position: relative;
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .modal .btn-fechar {
+    position: absolute; top: 12px; right: 12px;
+    width: 32px; height: 32px; border-radius: 50%;
+    background: #334155; color: #e2e8f0; border: none;
+    font-size: 16px; cursor: pointer; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal .btn-fechar:hover { background: #475569; }
+  .modal h3 { margin-bottom: 6px; font-size: 20px; padding-right: 32px; }
+  .modal .subtitulo { color: #94a3b8; font-size: 13px; margin-bottom: 16px; }
+  .modal p { color: #94a3b8; font-size: 14px; margin-bottom: 16px; }
+
+  .badge-admin {
+    background: #f59e0b; color: #000; padding: 2px 8px;
+    border-radius: 6px; font-size: 10px; font-weight: 700;
+    text-transform: uppercase;
+  }
+  .badge-convidado {
+    background: #3b82f6; color: #fff; padding: 2px 8px;
+    border-radius: 6px; font-size: 10px; font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .categoria-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px; background: #0f172a; border-radius: 10px;
+    margin-bottom: 6px; border-left: 4px solid #10b981;
+  }
+  .categoria-item .emoji { font-size: 22px; }
+  .categoria-item .nome { flex: 1; font-weight: 600; }
+  .categoria-item .acoes { display: flex; gap: 6px; }
+
+  .situacao-box {
+    border-radius: 14px; padding: 18px; text-align: center;
+    margin-bottom: 16px; border: 2px solid;
+  }
+  .situacao-deve { background: rgba(239, 68, 68, 0.12); border-color: #ef4444; }
+  .situacao-recebe { background: rgba(16, 185, 129, 0.12); border-color: #10b981; }
+  .situacao-quite { background: rgba(148, 163, 184, 0.12); border-color: #94a3b8; }
+  .situacao-box .rotulo { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8; }
+  .situacao-box .valor-grande { font-size: 32px; font-weight: 900; margin: 6px 0; }
+  .situacao-box .detalhe { font-size: 14px; opacity: 0.9; }
+
+  .paleta-cores { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+  .paleta-cores .cor {
+    width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
+    border: 3px solid transparent; transition: transform 0.1s;
+  }
+  .paleta-cores .cor.ativa { border-color: #fff; transform: scale(1.1); }
+
+  .sugestoes-emoji { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .sugestoes-emoji .em {
+    font-size: 22px; padding: 6px 10px; background: #0f172a;
+    border-radius: 8px; cursor: pointer; border: 2px solid transparent;
+  }
+  .sugestoes-emoji .em.ativo { border-color: #10b981; }
+
+  .aviso-convidado {
+    background: rgba(59, 130, 246, 0.12); border: 1px solid #3b82f6;
+    border-radius: 12px; padding: 12px; font-size: 13px;
+    color: #93c5fd; margin-bottom: 16px; text-align: center;
+  }
+
+  .btn-papel {
+    display: flex; align-items: center; gap: 14px;
+    width: 100%; padding: 16px; border-radius: 14px;
+    border: 2px solid #334155; background: #0f172a;
+    color: #e2e8f0; cursor: pointer; text-align: left;
+    transition: all 0.2s; margin-bottom: 10px;
+  }
+  .btn-papel:hover { border-color: #10b981; }
+  .btn-papel .icone { font-size: 32px; }
+  .btn-papel .txt .titulo { font-size: 16px; font-weight: 700; }
+  .btn-papel .txt .desc { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+  .btn-papel.admin { border-color: #f59e0b; }
+  .btn-papel.admin:hover { background: rgba(245, 158, 11, 0.1); }
+  .btn-papel.convidado { border-color: #3b82f6; }
+  .btn-papel.convidado:hover { background: rgba(59, 130, 246, 0.1); }
+  .btn-papel.bloqueado {
+    opacity: 0.35; cursor: not-allowed; border-color: #334155;
+  }
+  .btn-papel.bloqueado:hover { border-color: #334155; background: #0f172a; }
+
+  .info-role {
+    display: flex; flex-direction: column; gap: 6px;
+    align-items: center; margin-top: 8px;
+  }
+  .data-role {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(59, 130, 246, 0.15); border: 1px solid #3b82f6;
+    padding: 6px 14px; border-radius: 20px;
+    font-size: 13px; color: #93c5fd; font-weight: 600;
+  }
+  .data-role.sem-data {
+    background: rgba(245, 158, 11, 0.15); border-color: #f59e0b;
+    color: #fbbf24;
+  }
+  .data-role .btn-data {
+    background: #f59e0b; color: #000; border: none;
+    padding: 3px 8px; border-radius: 6px; font-size: 11px;
+    font-weight: 700; cursor: pointer; margin-left: 6px;
+  }
+  .countdown-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 12px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .cd-futuro { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
+  .cd-hoje { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
+  .cd-passado { background: rgba(100, 116, 139, 0.2); color: #94a3b8; border: 1px solid #64748b; }
+
+  .vagas-box {
+    display: flex; flex-direction: column; gap: 6px;
+    align-items: center; margin-top: 6px; width: 100%; max-width: 260px;
+  }
+  .vagas-texto {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 700; color: #94a3b8;
+  }
+  .vagas-texto.lotado { color: #ef4444; }
+  .vagas-barra {
+    width: 100%; height: 8px; background: #334155;
+    border-radius: 4px; overflow: hidden;
+  }
+  .vagas-barra .preenchido {
+    height: 100%; background: linear-gradient(90deg, #10b981, #3b82f6);
+    border-radius: 4px; transition: width 0.3s;
+  }
+  .vagas-barra .preenchido.lotado {
+    background: linear-gradient(90deg, #ef4444, #f59e0b);
+  }
+  .badge-lotado {
+    background: #ef4444; color: white; padding: 2px 8px;
+    border-radius: 6px; font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+
+  .btn-vagas {
+    background: #334155; color: #e2e8f0; border: none;
+    padding: 4px 10px; border-radius: 6px; font-size: 11px;
+    font-weight: 700; cursor: pointer; margin-left: 6px;
+  }
+  .btn-vagas:hover { background: #475569; }
+
+  /* Toast */
+  .toast-container {
+    position: fixed; top: 16px; left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999; pointer-events: none;
+    display: flex; flex-direction: column; gap: 8px;
+    width: calc(100% - 32px); max-width: 400px;
+  }
+  .toast {
+    background: #1e293b; border-radius: 12px; padding: 12px 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    display: flex; align-items: center; gap: 10px;
+    font-size: 14px; font-weight: 600; color: #e2e8f0;
+    border-left: 4px solid #10b981;
+    animation: toastIn 0.3s ease-out;
+    pointer-events: auto;
+  }
+  .toast.saindo { animation: toastOut 0.3s ease-in forwards; }
+  .toast .icone { font-size: 20px; flex-shrink: 0; }
+  .toast.sucesso { border-left-color: #10b981; }
+  .toast.erro { border-left-color: #ef4444; }
+  .toast.info { border-left-color: #3b82f6; }
+  .toast.aviso { border-left-color: #f59e0b; }
+
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes toastOut {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-20px); }
+  }
+
+  /* Botão flutuante / fixo no final */
+  .btn-fixo-bottom {
+    position: fixed; bottom: 20px; left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 32px); max-width: 400px;
+    z-index: 50;
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
+  }
+
+  @media (max-width: 400px) {
+    header h1 { font-size: 24px; }
+    .check-participantes { grid-template-columns: 1fr; }
+    .codigo-box .codigo { font-size: 26px; }
+    .convite-grid { grid-template-columns: 1fr; }
+    .convite-grid .btn.full { grid-column: span 1; }
+    .situacao-box .valor-grande { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="container">
+
+  <!-- ================= TELA: HOME ================= -->
+  <div class="tela ativa" id="tela-home">
+    <header>
+      <h1>🍖 RoleSplit</h1>
+      <p>Organize roles com os amigos</p>
+    </header>
+
+    <button class="btn-criar-grande" onclick="abrirModalCriar()">
+      <span class="icone">➕</span>
+      <span>Criar Novo Role</span>
+    </button>
+
+    <h2 style="font-size:16px; color:#f1f5f9; margin-bottom:12px; padding-left:4px;">📋 Meus Roles</h2>
+    <div id="listaMeusRoles">
+      <div class="empty">
+        <span class="emoji">🍖</span>
+        Nenhum role por aqui ainda.<br>
+        Crie o primeiro!
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TELA: CONVITE ================= -->
+  <div class="tela" id="tela-convite">
+    <div class="topbar">
+      <button onclick="irPara('home')">← Voltar</button>
+    </div>
+    <header>
+      <h1>🎉 Role Criado!</h1>
+      <p>Compartilhe o código com os amigos</p>
+    </header>
+
+    <div class="card">
+      <div class="codigo-box">
+        <div class="label-codigo">Código do Role</div>
+        <div class="codigo" id="codigoGerado">----</div>
+      </div>
+      <div class="link-box" id="linkConvite"></div>
+      <div class="convite-grid" style="margin-top:12px;">
+        <button class="btn btn-whats full" onclick="compartilharWhatsApp()">📱 WhatsApp</button>
+        <button class="btn btn-email" onclick="compartilharEmail()">📧 E-mail</button>
+        <button class="btn btn-share" onclick="compartilharNativo()">🔗 Compartilhar</button>
+        <button class="btn btn-secondary full" onclick="copiarLink()">📋 Copiar Link</button>
+      </div>
+      <button class="btn btn-primary" style="margin-top:12px;" onclick="irParaRoleAtual()">👀 Ver o Role</button>
+    </div>
+  </div>
+
+  <!-- ================= TELA: ROLE ================= -->
+  <div class="tela" id="tela-role">
+    <div class="topbar">
+      <button onclick="irPara('home')">← Voltar</button>
+      <div style="flex:1;"></div>
+      <span id="codigoRoleTopo" style="color:#94a3b8;font-size:12px;"></span>
+    </div>
+
+    <header>
+      <h1 id="tituloRole">Churrasco</h1>
+      <div class="info-role">
+        <div class="data-role" id="dataRole">📅 --/--/---- às --:--</div>
+        <div id="countdownRole"></div>
+        <div class="vagas-box" id="vagasBox" style="display:none;">
+          <div class="vagas-texto" id="vagasTexto">👥 0/0 pessoas</div>
+          <div class="vagas-barra"><div class="preenchido" id="vagasBarra" style="width:0%"></div></div>
+        </div>
+        <p id="subtituloRole" style="margin-top:4px; color:#94a3b8; font-size:14px;">0 participantes</p>
+      </div>
+    </header>
+
+    <div class="seletor-visao" id="seletorVisao" style="display:none;">
+      <button id="btnVisaoAdmin" onclick="mudarVisao('admin')">👑 Ver como Admin</button>
+      <button id="btnVisaoConvidado" onclick="mudarVisao('convidado')">👤 Ver como Convidado</button>
+    </div>
+
+    <div class="aviso-convidado" id="avisoConvidado" style="display:none;">
+      👁️ Você está como <strong>convidado</strong> — só pode visualizar.
+    </div>
+
+    <div id="blocoSituacao" style="display:none;"></div>
+
+    <div class="abas" id="abasRole">
+      <button class="aba ativa" id="abaBtnGastos" onclick="trocarAba('gastos', event)">🧾 Gastos</button>
+      <button class="aba" id="abaBtnPessoas" onclick="trocarAba('pessoas', event)">👥 Pessoas</button>
+      <button class="aba" id="abaBtnAcerto" onclick="trocarAba('acerto', event)">💸 Acerto</button>
+    </div>
+
+    <!-- ABA: GASTOS -->
+    <div id="aba-gastos">
+      <div class="card" id="cardAdicionarGasto">
+        <h2>➕ Adicionar Gasto</h2>
+        <div class="input-group">
+          <label>O que foi comprado?</label>
+          <input type="text" id="descricao" placeholder="Ex: Carne, Cerveja, Carvão...">
+        </div>
+        <div class="row">
+          <div class="input-group">
+            <label>Valor (R$)</label>
+            <input type="number" id="valor" placeholder="0,00" step="0.01" inputmode="decimal">
+          </div>
+          <div class="input-group">
+            <label>Categoria</label>
+            <select id="categoria"></select>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Quem pagou?</label>
+          <select id="pagador"></select>
+        </div>
+        <div class="input-group">
+          <label>Quem participou?</label>
+          <div class="check-participantes" id="checkParticipantes"></div>
+          <div style="display:flex;gap:6px;margin-top:6px;">
+            <button class="btn btn-secondary" style="padding:8px;font-size:12px;" onclick="marcarTodos(true)">✅ Todos</button>
+            <button class="btn btn-secondary" style="padding:8px;font-size:12px;" onclick="marcarTodos(false)">❌ Nenhum</button>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="adicionarGasto()">Adicionar Gasto</button>
+      </div>
+
+      <div class="card" id="cardCategorias">
+        <h2>🏷️ Categorias do Role</h2>
+        <div id="listaCategorias"></div>
+        <button class="btn btn-secondary" style="margin-top:8px;" onclick="abrirModalCategoria()">➕ Nova Categoria</button>
+      </div>
+
+      <div class="card">
+        <h2>📊 Resumo</h2>
+        <div class="resumo-grid">
+          <div class="resumo-item">
+            <div class="label">Total</div>
+            <div class="valor total" id="totalGasto">R$ 0,00</div>
+          </div>
+          <div class="resumo-item">
+            <div class="label">Pessoas</div>
+            <div class="valor pessoas" id="totalPessoas">0</div>
+          </div>
+          <div class="resumo-item" style="grid-column: span 2;">
+            <div class="label">Cota Média</div>
+            <div class="valor cota" id="cotaPessoa">R$ 0,00</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>🧾 Gastos Registrados</h2>
+        <div id="listaGastos">
+          <div class="empty"><span class="emoji">🧾</span>Nenhum gasto ainda.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ABA: PESSOAS -->
+    <div id="aba-pessoas" style="display:none;">
+      <div class="card" style="border: 1px solid #10b981;" id="cardConvite">
+        <h2>💌 Convidar Amigos</h2>
+        <p style="font-size:13px;color:#94a3b8;margin-bottom:12px;">
+          Compartilhe o código abaixo. Seus amigos entram como <strong>convidados</strong> (só visualizam).
+        </p>
+        <div class="codigo-box" style="margin:0 0 12px 0;">
+          <div class="label-codigo">Código</div>
+          <div class="codigo" id="codigoRolePessoas">----</div>
+        </div>
+        <div class="input-group">
+          <label>Link de Convite</label>
+          <div style="display:flex;gap:6px;">
+            <input type="text" id="linkConvitePessoas" readonly style="font-size:12px;">
+            <button class="btn btn-secondary" style="width:auto;padding:12px 16px;margin:0;" onclick="copiarLink()">📋</button>
+          </div>
+        </div>
+        <div class="convite-grid">
+          <button class="btn btn-whats full" onclick="compartilharWhatsApp()">📱 Enviar por WhatsApp</button>
+          <button class="btn btn-email" onclick="compartilharEmail()">📧 E-mail</button>
+          <button class="btn btn-share" onclick="compartilharNativo()">🔗 Compartilhar</button>
+          <button class="btn btn-secondary full" onclick="copiarConvite()">📋 Copiar Mensagem</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>👥 Participantes (<span id="contadorPessoas">0</span>)</h2>
+        <div id="listaParticipantes">
+          <div class="empty">Nenhum participante.</div>
+        </div>
+      </div>
+
+      <div class="card" id="cardAddParticipante">
+        <h2>➕ Adicionar Manualmente</h2>
+        <div class="input-group">
+          <label>Nome</label>
+          <input type="text" id="nomeNovoParticipante" placeholder="Ex: Giovane">
+        </div>
+        <button class="btn btn-primary" onclick="adicionarParticipante()">Adicionar</button>
+      </div>
+    </div>
+
+    <!-- ABA: ACERTO -->
+    <div id="aba-acerto" style="display:none;">
+      <div class="card">
+        <h2>💸 Saldos</h2>
+        <div id="listaSaldos">
+          <div class="empty">Adicione gastos para ver os saldos.</div>
+        </div>
+      </div>
+      <div class="card" id="cardAcertos">
+        <h2>🤝 Quem Paga Quem</h2>
+        <div id="listaAcertos">
+          <div class="empty">Nada por aqui ainda.</div>
+        </div>
+        <button class="btn btn-whats" style="margin-top:8px;" onclick="copiarWhatsApp()">📱 Copiar Resumo</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============ MODAL: CRIAR ROLE ============ -->
+<div class="modal-overlay" id="modalCriar">
+  <div class="modal">
+    <button class="btn-fechar" onclick="fecharModalCriar()">✕</button>
+    <h3>➕ Criar Novo Role</h3>
+    <p class="subtitulo">Preencha os dados do seu role</p>
+
+    <div class="input-group">
+      <label>Nome do Role</label>
+      <input type="text" id="novoNomeRole" placeholder="Ex: Churrasco do Douglas">
+    </div>
+    <div class="row">
+      <div class="input-group">
+        <label>📅 Data</label>
+        <input type="date" id="novaData">
+      </div>
+      <div class="input-group">
+        <label>🕐 Hora</label>
+        <input type="time" id="novaHora">
+      </div>
+    </div>
+    <div class="input-group">
+      <label>👥 Vagas (vazio = ilimitado)</label>
+      <input type="number" id="novasVagas" placeholder="Ex: 6" min="1" inputmode="numeric">
+    </div>
+    <div class="input-group">
+      <label>Seu nome (admin)</label>
+      <input type="text" id="novoAdmin" placeholder="Ex: Douglas">
+    </div>
+
+    <button class="btn btn-primary" onclick="criarRole()">🚀 Criar Role</button>
+  </div>
+</div>
+
+<!-- ============ MODAL: ESCOLHER PAPEL ============ -->
+<div class="modal-overlay" id="modalPapel">
+  <div class="modal">
+    <button class="btn-fechar" onclick="fecharModalPapel()">✕</button>
+    <h3 id="tituloModalPapel">🍖 Entrar no Role</h3>
+    <p class="subtitulo" id="textoModalPapel">Digite seu nome e escolha como entrar.</p>
+    <div class="input-group">
+      <label>Seu nome</label>
+      <input type="text" id="inputNomePapel" placeholder="Ex: Matheus">
+    </div>
+    <div id="areaBotoesPapel"></div>
+  </div>
+</div>
+
+<!-- ============ MODAL: CATEGORIA ============ -->
+<div class="modal-overlay" id="modalCategoria">
+  <div class="modal">
+    <button class="btn-fechar" onclick="fecharModalCategoria()">✕</button>
+    <h3 id="tituloModalCategoria">🏷️ Nova Categoria</h3>
+    <p class="subtitulo">Dê um nome, emoji e cor</p>
+    <div class="input-group">
+      <label>Nome</label>
+      <input type="text" id="catNome" placeholder="Ex: Carne, Bebida, Carvão...">
+    </div>
+    <div class="input-group">
+      <label>Emoji</label>
+      <input type="text" id="catEmoji" placeholder="🥩" maxlength="2" style="text-align:center;font-size:24px;">
+      <div class="sugestoes-emoji" id="sugestoesEmoji"></div>
+    </div>
+    <div class="input-group">
+      <label>Cor</label>
+      <div class="paleta-cores" id="paletaCores"></div>
+    </div>
+    <button class="btn btn-primary" onclick="salvarCategoria()">💾 Salvar</button>
+  </div>
+</div>
+
+<!-- ============ MODAL: EDITAR NOME ============ -->
+<div class="modal-overlay" id="modalEditarNome">
+  <div class="modal">
+    <button class="btn-fechar" onclick="fecharModalEditarNome()">✕</button>
+    <h3>✏️ Editar Nome</h3>
+    <p class="subtitulo" id="textoModalEditarNome">Alterar o nome deste participante.</p>
+    <div class="input-group">
+      <label>Novo nome</label>
+      <input type="text" id="inputNovoNome" placeholder="Ex: Matheus">
+    </div>
+    <button class="btn btn-primary" onclick="salvarEdicaoNome()">💾 Salvar</button>
+  </div>
+</div>
+
+<!-- ============ MODAL: DATA ============ -->
+<div class="modal-overlay" id="modalData">
+  <div class="modal">
+    <button class="btn-fechar" onclick="fecharModalData()">✕</button>
+    <h3>📅 Definir Data e Hora</h3>
+    <p class="subtitulo">Escolha quando o role vai acontecer.</p>
+    <div class="row">
+      <div class="input-group">
+        <label>Data</label>
+        <input type="date" id="inputDataModal">
+      </div>
+      <div class="input-group">
+        <label>Hora</label>
+        <input type="time" id="inputHoraModal">
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="salvarDataModal()">💾 Salvar</button>
+  </div>
+</div>
+
+<!-- ============ MODAL: VAGAS ============ -->
+<div class="modal-overlay" id="modalVagas">
+  <div class="modal">
+    <button class="btn-fechar" onclick="fecharModalVagas()">✕</button>
+    <h3>👥 Editar Vagas</h3>
+    <p class="subtitulo">Deixe vazio pra ilimitado.</p>
+    <div class="input-group">
+      <label>Vagas</label>
+      <input type="number" id="inputVagasModal" placeholder="Ex: 6" min="1" inputmode="numeric">
+    </div>
+    <button class="btn btn-primary" onclick="salvarVagasModal()">💾 Salvar</button>
+  </div>
+</div>
+
+<script>
+  // ================= ESTADO =================
+  let roles = {};
+  let roleAtual = null;
+  let nomeUsuario = '';
+  let codigoConvite = null;
+  let meuPapel = 'admin';
+  let categoriasSalvas = {};
+  let editandoCategoriaId = null;
+  let editandoParticipanteNome = null;
+  let visaoSimulada = null;
+  let papelParaAbrir = null;
+
+  const CORES_PADRAO = ['#ef4444','#f59e0b','#10b981','#3b82f6','#8b5cf6','#ec4899','#06b6d4','#84cc16'];
+  const EMOJIS_SUGERIDOS = ['🍖','🍺','🥤','🔥','🧊','🍕','🍔','🍰','🚗','🎉','📦','🛒','💡','🧂','🍗','🥗','🍷','☕'];
+
+  // ================= TOAST =================
+  function toast(mensagem, tipo = 'sucesso', icone = null) {
+    const container = document.getElementById('toastContainer');
+    const el = document.createElement('div');
+    el.className = 'toast ' + tipo;
+    const icones = { sucesso: '✅', erro: '❌', info: 'ℹ️', aviso: '⚠️' };
+    el.innerHTML = `<span class="icone">${icone || icones[tipo] || '✅'}</span><span>${mensagem}</span>`;
+    container.appendChild(el);
+    setTimeout(() => {
+      el.classList.add('saindo');
+      setTimeout(() => el.remove(), 300);
+    }, 3000);
+  }
+
+  // ================= NAVEGAÇÃO =================
+  function irPara(tela) {
+    document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
+    document.getElementById('tela-' + tela).classList.add('ativa');
+    window.scrollTo(0, 0);
+  }
+
+  function trocarAba(aba, event) {
+    document.querySelectorAll('.aba').forEach(a => a.classList.remove('ativa'));
+    if (event) event.target.classList.add('ativa');
+    document.getElementById('aba-gastos').style.display = aba === 'gastos' ? 'block' : 'none';
+    document.getElementById('aba-pessoas').style.display = aba === 'pessoas' ? 'block' : 'none';
+    document.getElementById('aba-acerto').style.display = aba === 'acerto' ? 'block' : 'none';
+    aplicarPermissoes();
+  }
+
+  // ================= PERSISTÊNCIA =================
+  function carregar() {
+    try {
+      const salvo = localStorage.getItem('roleSplitApp');
+      if (salvo) {
+        const data = JSON.parse(salvo);
+        roles = data.roles || {};
+        categoriasSalvas = data.categoriasSalvas || {};
+        nomeUsuario = data.nomeUsuario || '';
+      }
+    } catch(e) { console.warn('Erro ao carregar:', e); }
+  }
+  function salvar() {
+    try {
+      localStorage.setItem('roleSplitApp', JSON.stringify({ roles, categoriasSalvas, nomeUsuario }));
+    } catch(e) { console.warn('Erro ao salvar:', e); }
+  }
+
+  // ================= MODAIS: CRIAR =================
+  function abrirModalCriar() {
+    document.getElementById('novoNomeRole').value = '';
+    document.getElementById('novaData').value = '';
+    document.getElementById('novaHora').value = '';
+    document.getElementById('novasVagas').value = '';
+    document.getElementById('novoAdmin').value = nomeUsuario || '';
+    document.getElementById('modalCriar').classList.add('ativo');
+    setTimeout(() => document.getElementById('novoNomeRole').focus(), 100);
+  }
+  function fecharModalCriar() {
+    document.getElementById('modalCriar').classList.remove('ativo');
+  }
+
+  // ================= CRIAR / ENTRAR =================
+  function gerarCodigo() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let c = '';
+    for (let i = 0; i < 4; i++) c += chars.charAt(Math.floor(Math.random() * chars.length));
+    return c;
+  }
+
+  function gerarCategoriasPadrao() {
+    return [
+      { id: 1, nome: 'Comida', emoji: '🍖', cor: '#f59e0b' },
+      { id: 2, nome: 'Bebida', emoji: '🍺', cor: '#3b82f6' },
+      { id: 3, nome: 'Outros', emoji: '📦', cor: '#8b5cf6' },
+    ];
+  }
+
+  function criarRole() {
+    const nome = document.getElementById('novoNomeRole').value.trim();
+    const data = document.getElementById('novaData').value;
+    const hora = document.getElementById('novaHora').value;
+    const vagasStr = document.getElementById('novasVagas').value.trim();
+    const admin = document.getElementById('novoAdmin').value.trim();
+
+    if (!nome) { toast('Digite o nome do role!', 'erro'); return; }
+    if (!data) { toast('Escolha a data do role!', 'erro'); return; }
+    if (!hora) { toast('Escolha a hora do role!', 'erro'); return; }
+    if (!admin) { toast('Digite seu nome!', 'erro'); return; }
+
+    let vagas = null;
+    if (vagasStr) {
+      vagas = parseInt(vagasStr);
+      if (isNaN(vagas) || vagas < 1) { toast('Número de vagas inválido!', 'erro'); return; }
+    }
+
+    let codigo = gerarCodigo();
+    while (roles[codigo]) codigo = gerarCodigo();
+
+    const dataHora = new Date(`${data}T${hora}:00`).getTime();
+
+    roles[codigo] = {
+      nome, codigo, admin,
+      data: dataHora,
+      vagas: vagas,
+      participantes: [admin],
+      gastos: [],
+      acertosPagos: []
+    };
+    categoriasSalvas[codigo] = gerarCategoriasPadrao();
+    nomeUsuario = admin;
+    roleAtual = codigo;
+    visaoSimulada = null;
+    salvar();
+
+    document.getElementById('codigoGerado').textContent = codigo;
+    document.getElementById('linkConvite').textContent = gerarLinkConvite(codigo);
+    fecharModalCriar();
+    toast('Role criado com sucesso!', 'sucesso', '🎉');
+    renderizarHome();
+    irPara('convite');
+  }
+
+  // ================= ABRIR ROLE =================
+  function abrirRole(codigo) {
+    const role = roles[codigo];
+    if (!role) { toast('Role não encontrado.', 'erro'); return; }
+    if (!role.acertosPagos) role.acertosPagos = [];
+
+    papelParaAbrir = codigo;
+    const modal = document.getElementById('modalPapel');
+    document.getElementById('tituloModalPapel').textContent = '🍖 ' + role.nome;
+    document.getElementById('textoModalPapel').innerHTML =
+      `Admin: <strong>${role.admin}</strong> · ${role.participantes.length} pessoa(s)`;
+    document.getElementById('inputNomePapel').value = nomeUsuario || '';
+    renderizarBotoesPapel(codigo);
+    modal.classList.add('ativo');
+  }
+
+  function renderizarBotoesPapel(codigo) {
+    const role = roles[codigo];
+    const nomeDigitado = (document.getElementById('inputNomePapel').value || '').trim();
+    const ehAdminDigitado = nomeDigitado && nomeDigitado.toLowerCase() === role.admin.toLowerCase();
+    const area = document.getElementById('areaBotoesPapel');
+
+    const classeAdmin = ehAdminDigitado ? 'btn-papel admin' : 'btn-papel bloqueado';
+    const onclickAdmin = ehAdminDigitado ? `onclick="escolherPapel('admin')"` : '';
+    const descAdmin = ehAdminDigitado ? 'Controla tudo do role' : 'Só o admin pode entrar como admin';
+
+    const podeConvidado = nomeDigitado.length > 0;
+    const classeConvidado = podeConvidado ? 'btn-papel convidado' : 'btn-papel bloqueado';
+    const onclickConvidado = podeConvidado ? `onclick="escolherPapel('convidado')"` : '';
+
+    area.innerHTML = `
+      <button class="${classeAdmin}" ${onclickAdmin}>
+        <span class="icone">👑</span>
+        <span class="txt">
+          <div class="titulo">Entrar como Admin</div>
+          <div class="desc">${descAdmin}</div>
+        </span>
+      </button>
+      <button class="${classeConvidado}" ${onclickConvidado}>
+        <span class="icone">👤</span>
+        <span class="txt">
+          <div class="titulo">Entrar como Convidado</div>
+          <div class="desc">${podeConvidado ? 'Só visualiza o role' : 'Digite seu nome primeiro'}</div>
+        </span>
+      </button>
+    `;
+  }
+
+  function escolherPapel(papel) {
+    const codigo = papelParaAbrir;
+    const role = roles[codigo];
+    const nome = (document.getElementById('inputNomePapel').value || '').trim();
+    if (!nome) { toast('Digite seu nome!', 'erro'); return; }
+
+    if (papel === 'admin' && nome.toLowerCase() !== role.admin.toLowerCase()) {
+      toast('Só o admin pode entrar como admin.', 'erro');
+      return;
+    }
+
+    const jaParticipa = role.participantes.includes(nome);
+    if (!jaParticipa && role.vagas && role.participantes.length >= role.vagas) {
+      toast(`Role lotado! ${role.participantes.length}/${role.vagas} vagas.`, 'erro');
+      return;
+    }
+
+    if (!jaParticipa) role.participantes.push(nome);
+    nomeUsuario = nome;
+    roleAtual = codigo;
+    visaoSimulada = null;
+    meuPapel = papel;
+
+    salvar();
+    fecharModalPapel();
+    abrirRoleDireto(codigo, meuPapel);
+  }
+
+  function fecharModalPapel() {
+    document.getElementById('modalPapel').classList.remove('ativo');
+    papelParaAbrir = null;
+  }
+
+  document.getElementById('inputNomePapel').addEventListener('input', () => {
+    if (papelParaAbrir) renderizarBotoesPapel(papelParaAbrir);
+  });
+
+  // ================= ABRIR ROLE DIRETO =================
+  function abrirRoleDireto(codigo, papel) {
+    roleAtual = codigo;
+    const role = roles[codigo];
+    if (!role) return;
+    if (!role.acertosPagos) role.acertosPagos = [];
+
+    document.getElementById('tituloRole').textContent = '🍖 ' + role.nome;
+    document.getElementById('subtituloRole').textContent = role.participantes.length + ' participante(s)';
+    document.getElementById('codigoRoleTopo').textContent = 'Código: ' + codigo;
+    document.getElementById('codigoRolePessoas').textContent = codigo;
+    document.getElementById('linkConvitePessoas').value = gerarLinkConvite(codigo);
+    document.getElementById('contadorPessoas').textContent = role.participantes.length;
+
+    meuPapel = papel;
+
+    const papelReal = (role.admin === nomeUsuario) ? 'admin' : 'convidado';
+    const sel = document.getElementById('seletorVisao');
+    if (papelReal === 'admin') {
+      sel.style.display = 'flex';
+      visaoSimulada = null;
+      atualizarBotoesVisao(papelReal);
+    } else {
+      sel.style.display = 'none';
+      visaoSimulada = null;
+    }
+
+    document.querySelectorAll('.aba').forEach(a => a.classList.remove('ativa'));
+    document.getElementById('abaBtnGastos').classList.add('ativa');
+    document.getElementById('aba-gastos').style.display = 'block';
+    document.getElementById('aba-pessoas').style.display = 'none';
+    document.getElementById('aba-acerto').style.display = 'none';
+
+    atualizarDataHora(codigo);
+    atualizarVagas(codigo);
+    aplicarPermissoes();
+    atualizarSelectPagador();
+    renderizarCheckParticipantes();
+    atualizarSelectCategoria();
+    renderizar();
+    irPara('role');
+  }
+
+  // ================= DATA/HORA =================
+  function formatarDataHora(ts) {
+    const d = new Date(ts);
+    const dias = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+    const dia = dias[d.getDay()];
+    const dd = String(d.getDate()).padStart(2,'0');
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const yyyy = d.getFullYear();
+    const hh = String(d.getHours()).padStart(2,'0');
+    const min = String(d.getMinutes()).padStart(2,'0');
+    return `${dia}, ${dd}/${mm}/${yyyy} às ${hh}:${min}`;
+  }
+
+  function calcularCountdown(ts) {
+    const agora = Date.now();
+    const diff = ts - agora;
+    const umDia = 24 * 60 * 60 * 1000;
+
+    if (diff < -umDia) {
+      const dias = Math.floor(-diff / umDia);
+      return { texto: `✅ Foi há ${dias} dia${dias > 1 ? 's' : ''}`, classe: 'cd-passado' };
+    }
+    if (diff < 0) {
+      return { texto: '🎉 Já aconteceu hoje!', classe: 'cd-passado' };
+    }
+
+    const d = new Date(ts);
+    const hoje = new Date();
+    const mesmoDia = d.getDate() === hoje.getDate() && d.getMonth() === hoje.getMonth() && d.getFullYear() === hoje.getFullYear();
+
+    if (mesmoDia) {
+      const horas = Math.floor(diff / (60 * 60 * 1000));
+      if (horas < 1) {
+        const mins = Math.floor(diff / (60 * 1000));
+        return { texto: `🔥 Falta${mins !== 1 ? 'm' : ''} ${mins} min!`, classe: 'cd-hoje' };
+      }
+      return { texto: `🔥 É HOJE! Faltam ${horas}h`, classe: 'cd-hoje' };
+    }
+
+    const dias = Math.ceil(diff / umDia);
+    if (dias === 1) return { texto: '⏰ É AMANHÃ!', classe: 'cd-hoje' };
+    return { texto: `📅 Faltam ${dias} dias`, classe: 'cd-futuro' };
+  }
+
+  function atualizarDataHora(codigo) {
+    const role = roles[codigo];
+    const el = document.getElementById('dataRole');
+    if (!role || !role.data) {
+      el.className = 'data-role sem-data';
+      el.innerHTML = `📅 Data não definida ${meuPapel === 'admin' ? '<button class="btn-data" onclick="abrirModalData()">Definir</button>' : ''}`;
+      document.getElementById('countdownRole').innerHTML = '';
+      return;
+    }
+    el.className = 'data-role';
+    el.textContent = '📅 ' + formatarDataHora(role.data);
+    const cd = calcularCountdown(role.data);
+    document.getElementById('countdownRole').innerHTML =
+      `<span class="countdown-badge ${cd.classe}">${cd.texto}</span>`;
+  }
+
+  function atualizarVagas(codigo) {
+    const role = roles[codigo];
+    const box = document.getElementById('vagasBox');
+    if (!role.vagas) {
+      box.style.display = 'none';
+      return;
+    }
+    box.style.display = 'flex';
+    const atual = role.participantes.length;
+    const total = role.vagas;
+    const pct = Math.min(100, (atual / total) * 100);
+    const lotado = atual >= total;
+
+    let texto = `👥 ${atual}/${total} pessoas`;
+    if (lotado) texto += ' <span class="badge-lotado">LOTADO</span>';
+    if (meuPapel === 'admin') texto += ' <button class="btn-vagas" onclick="abrirModalVagas()">✏️ editar</button>';
+    document.getElementById('vagasTexto').innerHTML = texto;
+    document.getElementById('vagasTexto').className = 'vagas-texto' + (lotado ? ' lotado' : '');
+    const barra = document.getElementById('vagasBarra');
+    barra.style.width = pct + '%';
+    barra.className = 'preenchido' + (lotado ? ' lotado' : '');
+  }
+
+  function abrirModalData() {
+    if (meuPapel !== 'admin') return;
+    const role = roles[roleAtual];
+    if (role.data) {
+      const d = new Date(role.data);
+      document.getElementById('inputDataModal').value =
+        `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      document.getElementById('inputHoraModal').value =
+        `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    } else {
+      document.getElementById('inputDataModal').value = '';
+      document.getElementById('inputHoraModal').value = '';
+    }
+    document.getElementById('modalData').classList.add('ativo');
+  }
+  function fecharModalData() {
+    document.getElementById('modalData').classList.remove('ativo');
+  }
+  function salvarDataModal() {
+    const data = document.getElementById('inputDataModal').value;
+    const hora = document.getElementById('inputHoraModal').value;
+    if (!data || !hora) { toast('Preencha data e hora!', 'erro'); return; }
+    const role = roles[roleAtual];
+    role.data = new Date(`${data}T${hora}:00`).getTime();
+    salvar();
+    fecharModalData();
+    atualizarDataHora(roleAtual);
+    renderizar();
+    toast('Data atualizada!', 'sucesso');
+  }
+
+  function abrirModalVagas() {
+    if (meuPapel !== 'admin') return;
+    const role = roles[roleAtual];
+    document.getElementById('inputVagasModal').value = role.vagas || '';
+    document.getElementById('modalVagas').classList.add('ativo');
+  }
+  function fecharModalVagas() {
+    document.getElementById('modalVagas').classList.remove('ativo');
+  }
+  function salvarVagasModal() {
+    const v = document.getElementById('inputVagasModal').value.trim();
+    const role = roles[roleAtual];
+    if (v) {
+      const n = parseInt(v);
+      if (isNaN(n) || n < 1) { toast('Número inválido!', 'erro'); return; }
+      if (n < role.participantes.length) {
+        toast(`Já tem ${role.participantes.length} pessoas. Não pode ser menor.`, 'erro');
+        return;
+      }
+      role.vagas = n;
+    } else {
+      role.vagas = null;
+    }
+    salvar();
+    fecharModalVagas();
+    atualizarVagas(roleAtual);
+    renderizar();
+    toast('Vagas atualizadas!', 'sucesso');
+  }
+
+  function atualizarBotoesVisao(papelReal) {
+    const bA = document.getElementById('btnVisaoAdmin');
+    const bC = document.getElementById('btnVisaoConvidado');
+    bA.className = ''; bC.className = '';
+    const atual = visaoSimulada || papelReal;
+    if (atual === 'admin') bA.className = 'ativo admin';
+    else bC.className = 'ativo convidado';
+  }
+
+  function mudarVisao(nova) {
+    visaoSimulada = nova;
+    const role = roles[roleAtual];
+    const papelReal = (role.admin === nomeUsuario) ? 'admin' : 'convidado';
+    atualizarBotoesVisao(papelReal);
+    meuPapel = (papelReal === 'admin' && visaoSimulada) ? visaoSimulada : papelReal;
+
+    if (meuPapel === 'convidado' && document.getElementById('aba-acerto').style.display === 'block') {
+      document.querySelectorAll('.aba').forEach(a => a.classList.remove('ativa'));
+      document.getElementById('abaBtnGastos').classList.add('ativa');
+      document.getElementById('aba-gastos').style.display = 'block';
+      document.getElementById('aba-pessoas').style.display = 'none';
+      document.getElementById('aba-acerto').style.display = 'none';
+    }
+
+    aplicarPermissoes();
+    atualizarDataHora(roleAtual);
+    atualizarVagas(roleAtual);
+    renderizar();
+  }
+
+  function aplicarPermissoes() {
+    const ehAdmin = meuPapel === 'admin';
+
+    document.getElementById('avisoConvidado').style.display = ehAdmin ? 'none' : 'block';
+    document.getElementById('blocoSituacao').style.display = ehAdmin ? 'none' : 'block';
+    document.getElementById('cardAdicionarGasto').style.display = ehAdmin ? 'block' : 'none';
+    document.getElementById('cardCategorias').style.display = ehAdmin ? 'block' : 'none';
+    document.getElementById('cardAddParticipante').style.display = ehAdmin ? 'block' : 'none';
+    document.getElementById('cardConvite').style.display = ehAdmin ? 'block' : 'none';
+
+    const btnAcerto = document.getElementById('abaBtnAcerto');
+    if (ehAdmin) {
+      btnAcerto.classList.remove('escondido');
+      btnAcerto.style.display = 'block';
+    } else {
+      btnAcerto.classList.add('escondido');
+      btnAcerto.style.display = 'none';
+    }
+
+    const cardAcertos = document.getElementById('cardAcertos');
+    if (ehAdmin) {
+      cardAcertos.classList.remove('escondido');
+      cardAcertos.style.display = 'block';
+    } else {
+      cardAcertos.classList.add('escondido');
+      cardAcertos.style.display = 'none';
+    }
+  }
+
+  function irParaRoleAtual() { if (roleAtual) abrirRoleDireto(roleAtual, meuPapel); }
+
+  // ================= LINK =================
+  function gerarLinkConvite(codigo) {
+    const base = window.location.origin + window.location.pathname;
+    return base + '?join=' + codigo;
+  }
+
+  function gerarMensagemConvite() {
+    const role = roles[roleAtual];
+    const dt = role.data ? formatarDataHora(role.data) : '';
+    let vagasTxt = '';
+    if (role.vagas) vagasTxt = `\n👥 Vagas: ${role.participantes.length}/${role.vagas}`;
+    return `🍖 *${role.nome}*\n\n` +
+      (dt ? `📅 ${dt}\n` : '') +
+      vagasTxt +
+      (dt || vagasTxt ? '\n\n' : '') +
+      `Você foi convidado para o role!\n\n` +
+      `🔑 *Código:* ${role.codigo}\n` +
+      `🔗 *Link:* ${gerarLinkConvite(role.codigo)}\n\n` +
+      `_RoleSplit - Organize seu role_`;
+  }
+
+  function compartilharWhatsApp() {
+    const texto = encodeURIComponent(gerarMensagemConvite());
+    window.open('https://wa.me/?text=' + texto, '_blank');
+  }
+  function compartilharEmail() {
+    const role = roles[roleAtual];
+    const assunto = encodeURIComponent('Convite para o role: ' + role.nome);
+    const corpo = encodeURIComponent(gerarMensagemConvite());
+    window.location.href = `mailto:?subject=${assunto}&body=${corpo}`;
+  }
+  function compartilharNativo() {
+    const texto = gerarMensagemConvite();
+    if (navigator.share) {
+      navigator.share({ title: 'Convite RoleSplit', text: texto }).catch(() => {});
+    } else copiarConvite();
+  }
+  function copiarConvite() {
+    copiarParaClipboard(gerarMensagemConvite(), 'Convite copiado!');
+  }
+  function copiarLink() {
+    copiarParaClipboard(gerarLinkConvite(roles[roleAtual].codigo), 'Link copiado!');
+  }
+  function copiarParaClipboard(texto, msg) {
+    navigator.clipboard.writeText(texto).then(() => toast(msg, 'sucesso', '📋')).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = texto; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+      toast(msg, 'sucesso', '📋');
+    });
+  }
+
+  // ================= SELECTS =================
+  function atualizarSelectPagador() {
+    const role = roles[roleAtual];
+    if (!role) return;
+    const select = document.getElementById('pagador');
+    const v = select.value;
+    select.innerHTML = '';
+    role.participantes.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p; opt.textContent = p;
+      select.appendChild(opt);
+    });
+    if (role.participantes.includes(v)) select.value = v;
+  }
+
+  function atualizarSelectCategoria() {
+    const cats = categoriasSalvas[roleAtual] || [];
+    const select = document.getElementById('categoria');
+    const v = select.value;
+    select.innerHTML = '';
+    if (cats.length === 0) {
+      const opt = document.createElement('option');
+      opt.value = ''; opt.textContent = '⚠️ Crie uma categoria primeiro';
+      select.appendChild(opt);
+    } else {
+      cats.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id; opt.textContent = `${c.emoji} ${c.nome}`;
+        select.appendChild(opt);
+      });
+      if (cats.some(c => String(c.id) === v)) select.value = v;
+    }
+  }
+
+  // ================= CHECK PARTICIPANTES =================
+  function renderizarCheckParticipantes() {
+    const role = roles[roleAtual];
+    if (!role) return;
+    const c = document.getElementById('checkParticipantes');
+    c.innerHTML = role.participantes.map(p => `
+      <label class="check-item ativo">
+        <input type="checkbox" value="${p}" checked>
+        <span>${p}</span>
+      </label>
+    `).join('');
+    c.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      cb.addEventListener('change', e => {
+        const label = e.target.closest('.check-item');
+        if (e.target.checked) label.classList.add('ativo');
+        else label.classList.remove('ativo');
+      });
+    });
+  }
+
+  function marcarTodos(m) {
+    document.querySelectorAll('#checkParticipantes input[type="checkbox"]').forEach(cb => {
+      cb.checked = m;
+      const l = cb.closest('.check-item');
+      if (m) l.classList.add('ativo'); else l.classList.remove('ativo');
+    });
+  }
+
+  // ================= CATEGORIAS =================
+  function abrirModalCategoria(id) {
+    editandoCategoriaId = id || null;
+    const cats = categoriasSalvas[roleAtual] || [];
+    const cat = id ? cats.find(c => c.id === id) : null;
+
+    document.getElementById('tituloModalCategoria').textContent = cat ? '✏️ Editar Categoria' : '🏷️ Nova Categoria';
+    document.getElementById('catNome').value = cat ? cat.nome : '';
+    document.getElementById('catEmoji').value = cat ? cat.emoji : '🏷️';
+
+    const se = document.getElementById('sugestoesEmoji');
+    se.innerHTML = EMOJIS_SUGERIDOS.map(e =>
+      `<span class="em ${cat && cat.emoji === e ? 'ativo' : ''}" onclick="escolherEmoji('${e}', this)">${e}</span>`
+    ).join('');
+
+    const pc = document.getElementById('paletaCores');
+    pc.innerHTML = CORES_PADRAO.map(c =>
+      `<div class="cor ${cat && cat.cor === c ? 'ativa' : ''}" style="background:${c}" onclick="escolherCor('${c}', this)"></div>`
+    ).join('');
+
+    document.getElementById('modalCategoria').classList.add('ativo');
+  }
+
+  function escolherEmoji(e, el) {
+    document.getElementById('catEmoji').value = e;
+    document.querySelectorAll('#sugestoesEmoji .em').forEach(x => x.classList.remove('ativo'));
+    el.classList.add('ativo');
+  }
+  function escolherCor(c, el) {
+    document.querySelectorAll('#paletaCores .cor').forEach(x => x.classList.remove('ativa'));
+    el.classList.add('ativa');
+  }
+  function fecharModalCategoria() {
+    document.getElementById('modalCategoria').classList.remove('ativo');
+    editandoCategoriaId = null;
+  }
+
+  function salvarCategoria() {
+    const nome = document.getElementById('catNome').value.trim();
+    const emoji = document.getElementById('catEmoji').value.trim() || '🏷️';
+    const corEl = document.querySelector('#paletaCores .cor.ativa');
+    const cor = corEl ? corEl.style.background : '#10b981';
+
+    if (!nome) { toast('Digite um nome para a categoria!', 'erro'); return; }
+    if (!categoriasSalvas[roleAtual]) categoriasSalvas[roleAtual] = [];
+
+    if (editandoCategoriaId) {
+      const cat = categoriasSalvas[roleAtual].find(c => c.id === editandoCategoriaId);
+      if (cat) { cat.nome = nome; cat.emoji = emoji; cat.cor = cor; }
+    } else {
+      const novoId = Date.now();
+      categoriasSalvas[roleAtual].push({ id: novoId, nome, emoji, cor });
+    }
+
+    salvar();
+    fecharModalCategoria();
+    renderizarCategorias();
+    atualizarSelectCategoria();
+    renderizar();
+    toast(editandoCategoriaId ? 'Categoria atualizada!' : 'Categoria criada!', 'sucesso');
+  }
+
+  function removerCategoria(id) {
+    const role = roles[roleAtual];
+    const usada = role.gastos.some(g => g.categoriaId === id);
+    if (usada) {
+      toast('Esta categoria está sendo usada em gastos.', 'aviso');
+      return;
+    }
+    if (!confirm('Remover esta categoria?')) return;
+    categoriasSalvas[roleAtual] = categoriasSalvas[roleAtual].filter(c => c.id !== id);
+    salvar();
+    renderizarCategorias();
+    atualizarSelectCategoria();
+    toast('Categoria removida.', 'info');
+  }
+
+  function renderizarCategorias() {
+    const cats = categoriasSalvas[roleAtual] || [];
+    const lista = document.getElementById('listaCategorias');
+    if (cats.length === 0) {
+      lista.innerHTML = '<div class="empty" style="padding:16px;">Nenhuma categoria. Crie a primeira!</div>';
+      return;
+    }
+    lista.innerHTML = cats.map(c => `
+      <div class="categoria-item" style="border-left-color:${c.cor}">
+        <span class="emoji">${c.emoji}</span>
+        <span class="nome">${c.nome}</span>
+        <div class="acoes">
+          <button class="btn-mini" onclick="abrirModalCategoria(${c.id})">✏️</button>
+          <button class="btn-mini" onclick="removerCategoria(${c.id})">✕</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ================= ADICIONAR GASTO =================
+  function adicionarGasto() {
+    if (meuPapel !== 'admin') { toast('Só o admin pode adicionar gastos.', 'erro'); return; }
+    const role = roles[roleAtual];
+    if (!role) return;
+
+    const descricao = document.getElementById('descricao').value.trim();
+    const valor = parseFloat(document.getElementById('valor').value);
+    const categoriaId = parseInt(document.getElementById('categoria').value);
+    const pagador = document.getElementById('pagador').value;
+    const selecionados = [];
+    document.querySelectorAll('#checkParticipantes input[type="checkbox"]:checked').forEach(cb => selecionados.push(cb.value));
+
+    if (!descricao || !valor || valor <= 0) { toast('Preencha a descrição e valor!', 'erro'); return; }
+    if (!categoriaId) { toast('Crie uma categoria primeiro!', 'erro'); return; }
+    if (!pagador) { toast('Selecione quem pagou!', 'erro'); return; }
+    if (selecionados.length === 0) { toast('Selecione 1+ participante!', 'erro'); return; }
+
+    role.gastos.push({ id: Date.now(), descricao, valor, categoriaId, pagador, participantes: selecionados });
+    document.getElementById('descricao').value = '';
+    document.getElementById('valor').value = '';
+    marcarTodos(true);
+    salvar();
+    renderizar();
+    toast('Gasto adicionado!', 'sucesso', '💸');
+  }
+
+  function removerGasto(id) {
+    if (meuPapel !== 'admin') return;
+    if (!confirm('Remover este gasto?')) return;
+    roles[roleAtual].gastos = roles[roleAtual].gastos.filter(g => g.id !== id);
+    salvar(); renderizar();
+    toast('Gasto removido.', 'info');
+  }
+
+  // ================= PARTICIPANTES =================
+  function adicionarParticipante() {
+    if (meuPapel !== 'admin') return;
+    const role = roles[roleAtual];
+    const nome = document.getElementById('nomeNovoParticipante').value.trim();
+    if (!nome) { toast('Digite um nome!', 'erro'); return; }
+    if (role.participantes.includes(nome)) { toast('Já está na lista!', 'aviso'); return; }
+    if (role.vagas && role.participantes.length >= role.vagas) {
+      toast(`Role lotado! ${role.participantes.length}/${role.vagas} vagas.`, 'erro');
+      return;
+    }
+    role.participantes.push(nome);
+    document.getElementById('nomeNovoParticipante').value = '';
+    salvar();
+    atualizarSelectPagador();
+    renderizarCheckParticipantes();
+    atualizarVagas(roleAtual);
+    renderizar();
+    toast(`${nome} adicionado!`, 'sucesso');
+  }
+
+  function removerParticipante(nome) {
+    if (meuPapel !== 'admin') return;
+    const role = roles[roleAtual];
+    if (!confirm(`Remover ${nome}?`)) return;
+    role.participantes = role.participantes.filter(p => p !== nome);
+    salvar();
+    atualizarSelectPagador();
+    renderizarCheckParticipantes();
+    atualizarVagas(roleAtual);
+    renderizar();
+    toast(`${nome} removido.`, 'info');
+  }
+
+  // ================= EDITAR NOME =================
+  function abrirModalEditarNome(nome) {
+    editandoParticipanteNome = nome;
+    const role = roles[roleAtual];
+    const ehAdmin = nome === role.admin;
+    document.getElementById('textoModalEditarNome').innerHTML = ehAdmin
+      ? `Alterar seu nome (admin). Atualiza gastos e acertos.`
+      : `Alterar o nome de <strong>${nome}</strong>.`;
+    document.getElementById('inputNovoNome').value = nome;
+    document.getElementById('modalEditarNome').classList.add('ativo');
+  }
+
+  function fecharModalEditarNome() {
+    document.getElementById('modalEditarNome').classList.remove('ativo');
+    editandoParticipanteNome = null;
+  }
+
+  function salvarEdicaoNome() {
+    const novo = document.getElementById('inputNovoNome').value.trim();
+    const antigo = editandoParticipanteNome;
+    if (!novo) { toast('Digite um nome!', 'erro'); return; }
+    if (novo === antigo) { fecharModalEditarNome(); return; }
+
+    const role = roles[roleAtual];
+    if (role.participantes.includes(novo)) { toast('Já existe alguém com esse nome!', 'erro'); return; }
+
+    role.participantes = role.participantes.map(p => p === antigo ? novo : p);
+    if (role.admin === antigo) role.admin = novo;
+
+    role.gastos.forEach(g => {
+      if (g.pagador === antigo) g.pagador = novo;
+      g.participantes = g.participantes.map(p => p === antigo ? novo : p);
+    });
+
+    if (role.acertosPagos) {
+      role.acertosPagos.forEach(a => {
+        if (a.de === antigo) a.de = novo;
+        if (a.para === antigo) a.para = novo;
+      });
+    }
+
+    if (nomeUsuario === antigo) nomeUsuario = novo;
+
+    salvar();
+    fecharModalEditarNome();
+    atualizarSelectPagador();
+    renderizarCheckParticipantes();
+    renderizar();
+    const papelReal = (role.admin === nomeUsuario) ? 'admin' : 'convidado';
+    const sel = document.getElementById('seletorVisao');
+    if (papelReal === 'admin') {
+      sel.style.display = 'flex';
+      atualizarBotoesVisao(papelReal);
+    }
+    toast('Nome atualizado!', 'sucesso');
+  }
+
+  // ================= CÁLCULOS =================
+  function formatarReal(v) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+
+  function calcularSaldos() {
+    const role = roles[roleAtual];
+    const saldos = {};
+    role.participantes.forEach(p => saldos[p] = { pago: 0, deve: 0 });
+    role.gastos.forEach(g => {
+      if (saldos[g.pagador]) saldos[g.pagador].pago += g.valor;
+      const vpp = g.valor / g.participantes.length;
+      g.participantes.forEach(p => { if (saldos[p]) saldos[p].deve += vpp; });
+    });
+    return Object.entries(saldos).map(([nome, d]) => ({
+      nome, pago: d.pago, deve: d.deve, saldo: d.pago - d.deve
+    }));
+  }
+
+  function calcularAcertos(saldos) {
+    const c = saldos.filter(s => s.saldo > 0.01).map(s => ({ ...s })).sort((a, b) => b.saldo - a.saldo);
+    const d = saldos.filter(s => s.saldo < -0.01).map(s => ({ ...s, saldo: -s.saldo })).sort((a, b) => b.saldo - a.saldo);
+    const acertos = []; let i = 0, j = 0;
+    while (i < c.length && j < d.length) {
+      const cc = c[i], dd = d[j];
+      const v = Math.min(cc.saldo, dd.saldo);
+      if (v > 0.01) acertos.push({ de: dd.nome, para: cc.nome, valor: v });
+      cc.saldo -= v; dd.saldo -= v;
+      if (cc.saldo < 0.01) i++;
+      if (dd.saldo < 0.01) j++;
+    }
+    return acertos;
+  }
+
+  function acharCategoria(id) {
+    const cats = categoriasSalvas[roleAtual] || [];
+    return cats.find(c => c.id === id) || { nome: 'Sem categoria', emoji: '❓', cor: '#64748b' };
+  }
+
+  function chaveAcerto(a) { return `${a.de}|${a.para}|${a.valor.toFixed(2)}`; }
+
+  function acharAcertoPago(a) {
+    const role = roles[roleAtual];
+    if (!role.acertosPagos) return null;
+    return role.acertosPagos.find(x => x.chave === chaveAcerto(a)) || null;
+  }
+
+  function todosAcertosPagos(nome, acertos) {
+    const meus = acertos.filter(a => a.de === nome);
+    if (meus.length === 0) return false;
+    return meus.every(a => acharAcertoPago(a));
+  }
+
+  function marcarAcertoPago(de, para, valor) {
+    if (meuPapel !== 'admin') { toast('Só o admin pode marcar como pago.', 'erro'); return; }
+    const role = roles[roleAtual];
+    if (!role.acertosPagos) role.acertosPagos = [];
+    const a = { de, para, valor };
+    const k = chaveAcerto(a);
+    if (role.acertosPagos.find(x => x.chave === k)) {
+      if (confirm('Desmarcar este acerto como pago?')) {
+        role.acertosPagos = role.acertosPagos.filter(x => x.chave !== k);
+        toast('Acerto desmarcado.', 'info');
+      } else {
+        return;
+      }
+    } else {
+      role.acertosPagos.push({ chave: k, de, para, valor, marcadoPor: nomeUsuario, marcadoEm: Date.now() });
+      toast('Marcado como pago!', 'sucesso', '✅');
+    }
+    salvar();
+    renderizar();
+    aplicarPermissoes();
+  }
+
+  // ================= RENDERIZAÇÃO =================
+  function renderizar() {
+    const role = roles[roleAtual];
+    if (!role) return;
+
+    document.getElementById('subtituloRole').textContent = role.participantes.length + ' participante(s)';
+    document.getElementById('contadorPessoas').textContent = role.participantes.length;
+
+    // GASTOS
+    const lg = document.getElementById('listaGastos');
+    if (role.gastos.length === 0) {
+      lg.innerHTML = '<div class="empty"><span class="emoji">🧾</span>Nenhum gasto ainda.</div>';
+    } else {
+      lg.innerHTML = role.gastos.map(g => {
+        const cat = acharCategoria(g.categoriaId);
+        return `
+        <div class="gasto-item" style="border-left-color:${cat.cor}">
+          <div class="gasto-info">
+            <div class="nome">${g.descricao}<span class="tag" style="background:${cat.cor};color:#fff;">${cat.emoji} ${cat.nome}</span></div>
+            <div class="pagador">💳 Pago por: <strong>${g.pagador}</strong></div>
+            <div class="participantes-info">👥 ${g.participantes.length} pessoa(s)</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+            <span class="gasto-valor">${formatarReal(g.valor)}</span>
+            ${meuPapel === 'admin' ? `<button class="btn btn-danger" onclick="removerGasto(${g.id})">✕</button>` : ''}
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // RESUMO
+    const total = role.gastos.reduce((a, g) => a + g.valor, 0);
+    const num = role.participantes.length;
+    const cota = num > 0 ? total / num : 0;
+    document.getElementById('totalGasto').textContent = formatarReal(total);
+    document.getElementById('totalPessoas').textContent = num;
+    document.getElementById('cotaPessoa').textContent = formatarReal(cota);
+
+    // PARTICIPANTES
+    const saldos = calcularSaldos();
+    const acertos = calcularAcertos(saldos);
+    const lp = document.getElementById('listaParticipantes');
+    lp.innerHTML = role.participantes.map(p => {
+      const ehAdmin = p === role.admin;
+      const badge = ehAdmin ? '<span class="badge-admin">Admin</span>' : '<span class="badge-convidado">Convidado</span>';
+
+      let saldoTxt = '';
+      if (meuPapel === 'admin') {
+        const s = saldos.find(x => x.nome === p);
+        if (s) {
+          const todosPagos = todosAcertosPagos(p, acertos);
+          if (todosPagos && s.saldo < -0.01) {
+            saldoTxt = `<span style="color:#10b981;font-size:12px;">✅ Já pagou (${formatarReal(Math.abs(s.saldo))})</span>`;
+          } else if (s.saldo > 0.01) {
+            saldoTxt = `<span style="color:#10b981;font-size:12px;">✅ Recebe ${formatarReal(s.saldo)}</span>`;
+          } else if (s.saldo < -0.01) {
+            saldoTxt = `<span style="color:#ef4444;font-size:12px;">❌ Deve ${formatarReal(Math.abs(s.saldo))}</span>`;
+          } else {
+            saldoTxt = `<span style="color:#94a3b8;font-size:12px;">⚖️ Quite</span>`;
+          }
+        }
+      }
+
+      let botoes = '';
+      if (meuPapel === 'admin') {
+        const btnEditar = `<button class="btn-mini" onclick="abrirModalEditarNome('${p}')">✏️</button>`;
+        const btnRemover = ehAdmin ? '' : `<button class="btn btn-danger" onclick="removerParticipante('${p}')">✕</button>`;
+        botoes = btnEditar + btnRemover;
+      }
+      return `
+        <div class="saldo-item saldo-ok" style="justify-content:space-between;flex-direction:column;align-items:stretch;gap:4px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+            <span>${p} ${badge}</span>
+            <div style="display:flex;gap:6px;">${botoes}</div>
+          </div>
+          ${saldoTxt ? `<div style="text-align:right;">${saldoTxt}</div>` : ''}
+        </div>
+      `;
+    }).join('');
+
+    // SALDOS
+    const ls = document.getElementById('listaSaldos');
+    if (role.gastos.length === 0 || num === 0) {
+      ls.innerHTML = '<div class="empty">Adicione gastos para ver os saldos.</div>';
+      document.getElementById('listaAcertos').innerHTML = '<div class="empty">Nada por aqui ainda.</div>';
+      atualizarSituacaoPessoal([]);
+      return;
+    }
+    saldos.sort((a, b) => b.saldo - a.saldo);
+    ls.innerHTML = saldos.map(r => {
+      const todosPagos = todosAcertosPagos(r.nome, acertos);
+      let c, t;
+      if (todosPagos && r.saldo < -0.01) {
+        c = 'saldo-pago';
+        t = `✅ <span class="valor-saldo">Deve ${formatarReal(Math.abs(r.saldo))}</span> Já pagou`;
+      } else if (r.saldo > 0.01) { c = 'saldo-receber'; t = `✅ Recebe ${formatarReal(r.saldo)}`; }
+      else if (r.saldo < -0.01) { c = 'saldo-pagar'; t = `❌ Deve ${formatarReal(Math.abs(r.saldo))}`; }
+      else { c = 'saldo-ok'; t = '⚖️ Quite'; }
+      return `<div class="saldo-item ${c}"><span>${r.nome}</span><span>${t}</span></div>`;
+    }).join('');
+
+    // ACERTOS
+    const la = document.getElementById('listaAcertos');
+    if (acertos.length === 0) la.innerHTML = '<div class="empty">Ninguém deve nada! 🎉</div>';
+    else la.innerHTML = acertos.map(a => {
+      const pago = acharAcertoPago(a);
+      const cls = pago ? 'pago' : '';
+      let badge = '';
+      let info = '';
+      if (pago) {
+        badge = '<span class="badge-pago">✅ Pago</span>';
+        const dt = new Date(pago.marcadoEm);
+        const dataStr = dt.toLocaleDateString('pt-BR') + ' ' + dt.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+        info = `<div class="info-pago">por ${pago.marcadoPor} em ${dataStr}</div>`;
+      }
+      const btnPago = (meuPapel === 'admin')
+        ? `<button class="btn-pago" onclick="marcarAcertoPago('${a.de}','${a.para}',${a.valor})">${pago ? '↩️' : '✅'}</button>`
+        : '';
+      return `
+        <div class="acerto-item ${cls}">
+          <div style="flex:1;min-width:0;">
+            <div class="quem"><strong>${a.de}</strong> → <strong>${a.para}</strong></div>
+            ${info}
+          </div>
+          <span class="valor-acerto">${formatarReal(a.valor)}</span>
+          ${badge}
+          ${btnPago}
+        </div>
+      `;
+    }).join('');
+
+    if (meuPapel === 'admin') renderizarCategorias();
+    atualizarSituacaoPessoal(acertos);
+    aplicarPermissoes();
+  }
+
+  function atualizarSituacaoPessoal(acertos) {
+    if (meuPapel === 'admin') return;
+    const role = roles[roleAtual];
+    const box = document.getElementById('blocoSituacao');
+    const saldos = calcularSaldos();
+    const meu = saldos.find(s => s.nome === nomeUsuario);
+
+    if (!meu || role.gastos.length === 0) {
+      box.innerHTML = `<div class="situacao-box situacao-quite">
+        <div class="rotulo">Sua situação</div>
+        <div class="valor-grande">⚖️</div>
+        <div class="detalhe">Aguardando gastos serem lançados</div>
+      </div>`;
+      return;
+    }
+
+    if (meu.saldo > 0.01) {
+      box.innerHTML = `<div class="situacao-box situacao-recebe">
+        <div class="rotulo">Sua situação</div>
+        <div class="valor-grande">✅ ${formatarReal(meu.saldo)}</div>
+        <div class="detalhe">Você tem a receber</div>
+      </div>`;
+    } else if (meu.saldo < -0.01) {
+      const meusAcertos = acertos.filter(a => a.de === nomeUsuario);
+      const todosPagos = todosAcertosPagos(nomeUsuario, acertos);
+      let detalhe = 'Você deve pagar';
+      if (todosPagos) {
+        detalhe = `✅ Você já acertou com todo mundo!`;
+      } else if (meusAcertos.length > 0) {
+        detalhe = `Pague para: ${meusAcertos.map(a => {
+          const pago = acharAcertoPago(a);
+          return `${a.para} (${formatarReal(a.valor)})${pago ? ' ✅' : ''}`;
+        }).join(', ')}`;
+      }
+      box.innerHTML = `<div class="situacao-box situacao-deve">
+        <div class="rotulo">Sua situação</div>
+        <div class="valor-grande">❌ ${formatarReal(Math.abs(meu.saldo))}</div>
+        <div class="detalhe">${detalhe}</div>
+      </div>`;
+    } else {
+      box.innerHTML = `<div class="situacao-box situacao-quite">
+        <div class="rotulo">Sua situação</div>
+        <div class="valor-grande">⚖️ Quite</div>
+        <div class="detalhe">Você não deve nada 🎉</div>
+      </div>`;
+    }
+  }
+
+  // ================= HOME =================
+  function renderizarHome() {
+    const lista = document.getElementById('listaMeusRoles');
+    const codigos = Object.keys(roles);
+    if (codigos.length === 0) {
+      lista.innerHTML = `<div class="empty">
+        <span class="emoji">🍖</span>
+        Nenhum role por aqui ainda.<br>
+        Crie o primeiro!
+      </div>`;
+      return;
+    }
+    lista.innerHTML = codigos.map(cod => {
+      const r = roles[cod];
+      const papel = r.admin === nomeUsuario ? '<span class="badge-admin">Admin</span>' : '<span class="badge-convidado">Convidado</span>';
+      const cd = r.data ? calcularCountdown(r.data) : null;
+      let vagasTxt = '';
+      if (r.vagas) {
+        const lotado = r.participantes.length >= r.vagas;
+        vagasTxt = `<span style="color:${lotado ? '#ef4444' : '#3b82f6'};font-weight:600;">👥 ${r.participantes.length}/${r.vagas}${lotado ? ' LOTADO' : ''}</span>`;
+      } else {
+        vagasTxt = `<span style="color:#94a3b8;">👥 ${r.participantes.length} pessoa(s)</span>`;
+      }
+      return `
+        <div class="evento-card" onclick="abrirRole('${cod}')">
+          <div class="titulo">🍖 ${r.nome} ${papel}</div>
+          <div class="data-info">${r.data ? '📅 ' + formatarDataHora(r.data) : '📅 Sem data'}</div>
+          ${cd ? `<div class="countdown-badge ${cd.classe}" style="margin-top:6px;">${cd.texto}</div>` : ''}
+          <div class="info" style="margin-top:6px;">${vagasTxt} • 🔑 ${r.codigo}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // ================= WHATSAPP RESUMO =================
+  function copiarWhatsApp() {
+    const role = roles[roleAtual];
+    const total = role.gastos.reduce((a, g) => a + g.valor, 0);
+    const saldos = calcularSaldos();
+    const acertos = calcularAcertos(saldos);
+    let t = `🍖 *${role.nome}*\n`;
+    if (role.data) t += `📅 ${formatarDataHora(role.data)}\n`;
+    t += `━━━━━━━━━━━━━━━━━━\n\n`;
+    t += `💰 Total: ${formatarReal(total)}\n👥 Pessoas: ${role.participantes.length}\n\n📋 *GASTOS:*\n`;
+    role.gastos.forEach(g => {
+      const cat = acharCategoria(g.categoriaId);
+      t += `• ${cat.emoji} ${g.descricao} - ${formatarReal(g.valor)} (${g.pagador})\n`;
+    });
+    t += `\n💸 *SALDOS:*\n`;
+    saldos.sort((a, b) => b.saldo - a.saldo).forEach(s => {
+      const todosPagos = todosAcertosPagos(s.nome, acertos);
+      if (todosPagos && s.saldo < -0.01) t += `✅ ${s.nome}: Já pagou (${formatarReal(Math.abs(s.saldo))})\n`;
+      else if (s.saldo > 0.01) t += `✅ ${s.nome}: Recebe ${formatarReal(s.saldo)}\n`;
+      else if (s.saldo < -0.01) t += `❌ ${s.nome}: Deve ${formatarReal(Math.abs(s.saldo))}\n`;
+      else t += `⚖️ ${s.nome}: Quite\n`;
+    });
+    if (acertos.length > 0) {
+      t += `\n🤝 *ACERTOS:*\n`;
+      acertos.forEach(a => {
+        const pago = acharAcertoPago(a);
+        t += `• ${a.de} → ${a.para}: ${formatarReal(a.valor)}${pago ? ' ✅ JÁ PAGO' : ''}\n`;
+      });
+    }
+    t += `\n_Gerado por RoleSplit 🍖_`;
+    copiarParaClipboard(t, 'Resumo copiado!');
+  }
+
+  // ================= INIT =================
+  function init() {
+    carregar();
+    renderizarHome();
+    irPara('home');
+
+    setInterval(() => {
+      if (roleAtual && document.getElementById('tela-role').classList.contains('ativa')) {
+        atualizarDataHora(roleAtual);
+      }
+    }, 60000);
+
+    // Fechar modais ao clicar fora
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', e => {
+        if (e.target === overlay) overlay.classList.remove('ativo');
+      });
+    });
+
+    const params = new URLSearchParams(window.location.search);
+    const join = params.get('join');
+    if (join) {
+      const codigo = join.toUpperCase();
+      codigoConvite = codigo;
+      if (roles[codigo]) {
+        abrirRole(codigo);
+      } else {
+        toast('Este convite não está disponível neste dispositivo.', 'erro');
+      }
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>
