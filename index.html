@@ -291,7 +291,6 @@
   </div>
 </div>
 
-<!-- Modal Criar Role -->
 <div class="modal-overlay" id="modalCriar">
   <div class="modal">
     <button class="btn-fechar" onclick="fecharModalCriar()">✕</button>
@@ -308,7 +307,6 @@
   </div>
 </div>
 
-<!-- Modal Papel -->
 <div class="modal-overlay" id="modalPapel">
   <div class="modal">
     <button class="btn-fechar" onclick="fecharModalPapel()">✕</button>
@@ -319,7 +317,6 @@
   </div>
 </div>
 
-<!-- Modal Categoria -->
 <div class="modal-overlay" id="modalCategoria">
   <div class="modal">
     <button class="btn-fechar" onclick="fecharModalCategoria()">✕</button>
@@ -331,7 +328,6 @@
   </div>
 </div>
 
-<!-- Modal Editar Nome -->
 <div class="modal-overlay" id="modalEditarNome">
   <div class="modal">
     <button class="btn-fechar" onclick="fecharModalEditarNome()">✕</button>
@@ -342,7 +338,6 @@
   </div>
 </div>
 
-<!-- Modal Editar Gasto -->
 <div class="modal-overlay" id="modalEditarGasto">
   <div class="modal">
     <button class="btn-fechar" onclick="fecharModalEditarGasto()">✕</button>
@@ -366,7 +361,6 @@
   </div>
 </div>
 
-<!-- Modal Data -->
 <div class="modal-overlay" id="modalData">
   <div class="modal">
     <button class="btn-fechar" onclick="fecharModalData()">✕</button>
@@ -379,13 +373,24 @@
   </div>
 </div>
 
-<!-- Modal Vagas -->
 <div class="modal-overlay" id="modalVagas">
   <div class="modal">
     <button class="btn-fechar" onclick="fecharModalVagas()">✕</button>
     <h3>👥 Editar Vagas</h3>
     <div class="input-group"><label>Vagas (vazio=ilimitado)</label><input type="number" id="inputVagasModal" min="1"></div>
     <button class="btn btn-primary" onclick="salvarVagasModal()">💾 Salvar</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalNovoParticipante">
+  <div class="modal">
+    <button class="btn-fechar" onclick="fecharModalNovoParticipante()">✕</button>
+    <h3>➕ Adicionar Participante</h3>
+    <p class="subtitulo" id="textoModalNovoParticipante"></p>
+    <div class="input-group">
+      <label><input type="checkbox" id="incluirNosGastos" style="width:18px;height:18px;accent-color:#10b981;margin-right:8px;vertical-align:middle;" checked> Incluir em todos os gastos existentes</label>
+    </div>
+    <button class="btn btn-primary" onclick="confirmarNovoParticipante()">✅ Confirmar</button>
   </div>
 </div>
 
@@ -420,6 +425,7 @@
   let editandoParticipanteNome = null;
   let editandoGastoId = null;
   let papelParaAbrir = null;
+  let novoParticipanteTmp = null;
   let unsubscribeRole = null;
 
   const CORES = ['#ef4444','#f59e0b','#10b981','#3b82f6','#8b5cf6','#ec4899','#06b6d4','#84cc16'];
@@ -508,6 +514,7 @@
   window.fecharModalEditarGasto = () => { document.getElementById('modalEditarGasto').classList.remove('ativo'); editandoGastoId = null; };
   window.fecharModalData = () => document.getElementById('modalData').classList.remove('ativo');
   window.fecharModalVagas = () => document.getElementById('modalVagas').classList.remove('ativo');
+  window.fecharModalNovoParticipante = () => { document.getElementById('modalNovoParticipante').classList.remove('ativo'); novoParticipanteTmp = null; };
 
   window.criarRole = async () => {
     const nome = document.getElementById('novoNomeRole').value.trim();
@@ -920,7 +927,6 @@
     document.getElementById('editDescricao').value = g.descricao;
     document.getElementById('editValor').value = g.valor;
 
-    // Categorias
     const cats = categoriasSalvas[roleAtual] || [];
     const sc = document.getElementById('editCategoria');
     sc.innerHTML = '';
@@ -931,7 +937,6 @@
       sc.appendChild(o);
     });
 
-    // Pagador
     const sp = document.getElementById('editPagador');
     sp.innerHTML = '';
     r.participantes.forEach(p => {
@@ -941,7 +946,6 @@
       sp.appendChild(o);
     });
 
-    // Participantes
     const ec = document.getElementById('editCheckParticipantes');
     ec.innerHTML = r.participantes.map(p => {
       const checked = g.participantes.includes(p);
@@ -988,6 +992,7 @@
     try { await salvarRole(roleAtual, { gastos: novos }); toast('Removido', 'info'); } catch(e) { toast('Erro: '+e.message, 'erro'); }
   };
 
+  // ⭐ ADICIONAR PARTICIPANTE (agora com modal de confirmação)
   window.adicionarParticipante = async () => {
     if (meuPapel !== 'admin') return;
     const r = roles[roleAtual];
@@ -995,16 +1000,53 @@
     if (!nome) { toast('Digite um nome!', 'erro'); return; }
     if (r.participantes.includes(nome)) { toast('Já está!', 'aviso'); return; }
     if (r.vagas && r.participantes.length >= r.vagas) { toast(`Lotado ${r.participantes.length}/${r.vagas}`, 'erro'); return; }
-    const novos = [...r.participantes, nome];
+
+    // Se não tem gastos, adiciona direto
+    if (!r.gastos || r.gastos.length === 0) {
+      await adicionarParticipanteFirestore(nome, false);
+      return;
+    }
+
+    // Tem gastos: mostra modal perguntando
+    novoParticipanteTmp = nome;
+    document.getElementById('textoModalNovoParticipante').innerHTML =
+      `Adicionar <strong>${nome}</strong> ao role?<br><br>Há <strong>${r.gastos.length} gasto(s)</strong> lançado(s).`;
+    document.getElementById('incluirNosGastos').checked = true;
+    document.getElementById('modalNovoParticipante').classList.add('ativo');
+  };
+
+  window.confirmarNovoParticipante = async () => {
+    const nome = novoParticipanteTmp;
+    if (!nome) return;
+    const incluir = document.getElementById('incluirNosGastos').checked;
+    fecharModalNovoParticipante();
+    await adicionarParticipanteFirestore(nome, incluir);
+  };
+
+  async function adicionarParticipanteFirestore(nome, incluirNosGastos) {
+    const r = roles[roleAtual];
+    const novosParts = [...r.participantes, nome];
+    const dados = { participantes: novosParts };
+
+    let gastosAtualizados = 0;
+    if (incluirNosGastos && r.gastos && r.gastos.length > 0) {
+      dados.gastos = r.gastos.map(g => {
+        if (g.participantes.includes(nome)) return g;
+        gastosAtualizados++;
+        return { ...g, participantes: [...g.participantes, nome] };
+      });
+    }
+
     try {
-      await salvarRole(roleAtual, { participantes: novos });
+      await salvarRole(roleAtual, dados);
       document.getElementById('nomeNovoParticipante').value = '';
       toast(`${nome} adicionado!`, 'sucesso');
-      if (r.gastos && r.gastos.length > 0) {
-        setTimeout(() => toast(`⚠️ ${nome} ainda não participa de nenhum gasto. Edite os gastos pra incluir.`, 'aviso'), 1000);
+      if (incluirNosGastos && gastosAtualizados > 0) {
+        setTimeout(() => toast(`✅ Incluído em ${gastosAtualizados} gasto(s)`, 'sucesso', '💸'), 800);
       }
     } catch(e) { toast('Erro: '+e.message, 'erro'); }
-  };
+  }
+
   window.removerParticipante = async (nome) => {
     if (meuPapel !== 'admin') return;
     if (!confirm(`Remover ${nome}?`)) return;
@@ -1171,7 +1213,6 @@
     } else if (meu.saldo < -0.01) {
       const tp = todosPagos(nomeUsuario, acertos);
       if (tp) {
-        // Já acertou → card verde com valor riscado
         box.innerHTML = `<div class="situacao-box situacao-acertou">
           <div class="rotulo">✅ Sua situação</div>
           <div class="valor-grande valor-riscado">${fmtR(Math.abs(meu.saldo))}</div>
