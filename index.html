@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RoleSplit</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍖</text></svg>">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
   body { background: #0f172a; color: #e2e8f0; min-height: 100vh; }
@@ -58,6 +59,7 @@
   .gasto-info .nome { font-weight: 600; font-size: 14px; }
   .gasto-info .pagador { font-size: 12px; color: #94a3b8; margin-top: 2px; }
   .gasto-info .participantes-info { font-size: 11px; color: #64748b; margin-top: 2px; }
+  .gasto-info .participantes-info.aviso { color: #f59e0b; font-weight: 700; }
   .gasto-valor { font-weight: 700; color: #10b981; white-space: nowrap; }
   .saldo-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-radius: 10px; margin-bottom: 8px; font-weight: 600; gap: 8px; }
   .saldo-receber { background: rgba(16, 185, 129, 0.15); color: #10b981; border-left: 3px solid #10b981; }
@@ -83,7 +85,6 @@
   .aba.ativa { background: #10b981; color: white; }
   .tela { display: none; }
   .tela.ativa { display: block; }
-  .escondido { display: none !important; }
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 100; }
   .modal-overlay.ativo { display: flex; }
   .modal { background: #1e293b; border-radius: 20px; padding: 20px; max-width: 420px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; }
@@ -100,8 +101,10 @@
   .situacao-deve { background: rgba(239, 68, 68, 0.12); border-color: #ef4444; }
   .situacao-recebe { background: rgba(16, 185, 129, 0.12); border-color: #10b981; }
   .situacao-quite { background: rgba(148, 163, 184, 0.12); border-color: #94a3b8; }
+  .situacao-acertou { background: rgba(16, 185, 129, 0.15); border-color: #10b981; }
   .situacao-box .rotulo { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8; }
   .situacao-box .valor-grande { font-size: 32px; font-weight: 900; margin: 6px 0; }
+  .situacao-box .valor-riscado { text-decoration: line-through; opacity: 0.6; }
   .situacao-box .detalhe { font-size: 14px; opacity: 0.9; }
   .paleta-cores { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
   .paleta-cores .cor { width: 36px; height: 36px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; }
@@ -134,13 +137,14 @@
   .badge-lotado { background: #ef4444; color: white; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
   .btn-vagas { background: #334155; color: #e2e8f0; border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; margin-left: 6px; }
   .toast-container { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 9999; pointer-events: none; display: flex; flex-direction: column; gap: 8px; width: calc(100% - 32px); max-width: 400px; }
-  .toast { background: #1e293b; border-radius: 12px; padding: 12px 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; border-left: 4px solid #10b981; pointer-events: auto; }
+  .toast { background: #1e293b; border-radius: 12px; padding: 12px 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; border-left: 4px solid #10b981; pointer-events: auto; animation: toastIn 0.3s ease-out; }
   .toast.saindo { animation: toastOut 0.3s ease-in forwards; }
   .toast .icone { font-size: 20px; flex-shrink: 0; }
   .toast.sucesso { border-left-color: #10b981; }
   .toast.erro { border-left-color: #ef4444; }
   .toast.info { border-left-color: #3b82f6; }
   .toast.aviso { border-left-color: #f59e0b; }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes toastOut { to { opacity: 0; transform: translateY(-20px); } }
   .loading-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 16px; z-index: 10000; }
   .loading-spinner { width: 48px; height: 48px; border-radius: 50%; border: 4px solid #334155; border-top-color: #10b981; animation: spin 0.8s linear infinite; }
@@ -287,6 +291,7 @@
   </div>
 </div>
 
+<!-- Modal Criar Role -->
 <div class="modal-overlay" id="modalCriar">
   <div class="modal">
     <button class="btn-fechar" onclick="fecharModalCriar()">✕</button>
@@ -303,6 +308,7 @@
   </div>
 </div>
 
+<!-- Modal Papel -->
 <div class="modal-overlay" id="modalPapel">
   <div class="modal">
     <button class="btn-fechar" onclick="fecharModalPapel()">✕</button>
@@ -313,6 +319,7 @@
   </div>
 </div>
 
+<!-- Modal Categoria -->
 <div class="modal-overlay" id="modalCategoria">
   <div class="modal">
     <button class="btn-fechar" onclick="fecharModalCategoria()">✕</button>
@@ -324,6 +331,7 @@
   </div>
 </div>
 
+<!-- Modal Editar Nome -->
 <div class="modal-overlay" id="modalEditarNome">
   <div class="modal">
     <button class="btn-fechar" onclick="fecharModalEditarNome()">✕</button>
@@ -334,6 +342,31 @@
   </div>
 </div>
 
+<!-- Modal Editar Gasto -->
+<div class="modal-overlay" id="modalEditarGasto">
+  <div class="modal">
+    <button class="btn-fechar" onclick="fecharModalEditarGasto()">✕</button>
+    <h3>✏️ Editar Gasto</h3>
+    <p class="subtitulo">Altere os dados e salve</p>
+    <div class="input-group"><label>O que foi comprado?</label><input type="text" id="editDescricao"></div>
+    <div class="row">
+      <div class="input-group"><label>Valor (R$)</label><input type="number" id="editValor" step="0.01" inputmode="decimal"></div>
+      <div class="input-group"><label>Categoria</label><select id="editCategoria"></select></div>
+    </div>
+    <div class="input-group"><label>Quem pagou?</label><select id="editPagador"></select></div>
+    <div class="input-group">
+      <label>Quem participou?</label>
+      <div class="check-participantes" id="editCheckParticipantes"></div>
+      <div style="display:flex;gap:6px;margin-top:6px;">
+        <button class="btn btn-secondary" style="padding:8px;font-size:12px;" onclick="marcarTodosEdit(true)">✅ Todos</button>
+        <button class="btn btn-secondary" style="padding:8px;font-size:12px;" onclick="marcarTodosEdit(false)">❌ Nenhum</button>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="salvarEdicaoGasto()">💾 Salvar Alterações</button>
+  </div>
+</div>
+
+<!-- Modal Data -->
 <div class="modal-overlay" id="modalData">
   <div class="modal">
     <button class="btn-fechar" onclick="fecharModalData()">✕</button>
@@ -346,6 +379,7 @@
   </div>
 </div>
 
+<!-- Modal Vagas -->
 <div class="modal-overlay" id="modalVagas">
   <div class="modal">
     <button class="btn-fechar" onclick="fecharModalVagas()">✕</button>
@@ -356,7 +390,6 @@
 </div>
 
 <script type="module">
-  // ============ FIREBASE ============
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
   import { initializeFirestore, doc, setDoc, getDoc, onSnapshot }
     from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
@@ -373,14 +406,9 @@
   };
 
   const app = initializeApp(firebaseConfig);
-  // ⭐ FORÇA LONG-POLLING
-  const db = initializeFirestore(app, {
-    experimentalForceLongPolling: true,
-    experimentalAutoDetectLongPolling: false
-  });
+  const db = initializeFirestore(app, { experimentalForceLongPolling: true });
   const auth = getAuth(app);
 
-  // ============ ESTADO ============
   let uid = null;
   let roles = {};
   let meusCodigos = [];
@@ -390,6 +418,7 @@
   let categoriasSalvas = {};
   let editandoCategoriaId = null;
   let editandoParticipanteNome = null;
+  let editandoGastoId = null;
   let papelParaAbrir = null;
   let unsubscribeRole = null;
 
@@ -463,7 +492,6 @@
     ];
   }
 
-  // ============ MODAIS ============
   window.abrirModalCriar = () => {
     document.getElementById('novoNomeRole').value = '';
     document.getElementById('novaData').value = '';
@@ -477,10 +505,10 @@
   window.fecharModalPapel = () => { document.getElementById('modalPapel').classList.remove('ativo'); papelParaAbrir = null; };
   window.fecharModalCategoria = () => { document.getElementById('modalCategoria').classList.remove('ativo'); editandoCategoriaId = null; };
   window.fecharModalEditarNome = () => { document.getElementById('modalEditarNome').classList.remove('ativo'); editandoParticipanteNome = null; };
+  window.fecharModalEditarGasto = () => { document.getElementById('modalEditarGasto').classList.remove('ativo'); editandoGastoId = null; };
   window.fecharModalData = () => document.getElementById('modalData').classList.remove('ativo');
   window.fecharModalVagas = () => document.getElementById('modalVagas').classList.remove('ativo');
 
-  // ============ CRIAR ROLE ============
   window.criarRole = async () => {
     const nome = document.getElementById('novoNomeRole').value.trim();
     const data = document.getElementById('novaData').value;
@@ -499,10 +527,7 @@
       if (isNaN(vagas) || vagas < 1) { toast('Vagas inválidas!', 'erro'); return; }
     }
 
-    const toastId = toast('Criando role...', 'info', '⏳');
-
     try {
-      // Gera código único
       let codigo = gerarCodigo();
       let tent = 0;
       while (tent < 5) {
@@ -535,11 +560,10 @@
       irPara('convite');
     } catch(e) {
       console.error('Erro criar:', e);
-      toast('Erro ao criar: ' + e.message, 'erro');
+      toast('Erro: ' + e.message, 'erro');
     }
   };
 
-  // ============ ENTRAR ============
   window.entrarComCodigo = async () => {
     const codigo = (document.getElementById('inputCodigoEntrar').value || '').trim().toUpperCase();
     if (!codigo) { toast('Digite o código!', 'erro'); return; }
@@ -561,7 +585,7 @@
       document.getElementById('modalPapel').classList.add('ativo');
     } catch(e) {
       console.error('Erro abrir:', e);
-      toast('Erro ao buscar role: ' + e.message, 'erro');
+      toast('Erro: ' + e.message, 'erro');
     }
   };
 
@@ -784,7 +808,7 @@
   window.compartilharEmail = () => { const r = roles[roleAtual]; window.location.href = `mailto:?subject=${encodeURIComponent('Convite: '+r.nome)}&body=${encodeURIComponent(msgConvite())}`; };
   window.compartilharNativo = () => { const t = msgConvite(); if (navigator.share) navigator.share({ title: 'RoleSplit', text: t }).catch(()=>{}); else copiar(msgConvite(), 'Convite copiado!'); };
   window.copiarConvite = () => copiar(msgConvite(), 'Convite copiado!');
-  window.copiarLink = () => copiar(gerarLinkConvite(roles[roleAtual].codigo), 'Link copiado!');
+  window.copiarLink = () => { if (!roles[roleAtual]) { toast('Role não encontrado', 'erro'); return; } copiar(gerarLinkConvite(roles[roleAtual].codigo), 'Link copiado!'); };
   function copiar(t, m) {
     navigator.clipboard.writeText(t).then(() => toast(m, 'sucesso', '📋')).catch(() => {
       const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select();
@@ -817,8 +841,12 @@
       cb.checked = m; const l = cb.closest('.check-item'); if (m) l.classList.add('ativo'); else l.classList.remove('ativo');
     });
   };
+  window.marcarTodosEdit = (m) => {
+    document.querySelectorAll('#editCheckParticipantes input[type="checkbox"]').forEach(cb => {
+      cb.checked = m; const l = cb.closest('.check-item'); if (m) l.classList.add('ativo'); else l.classList.remove('ativo');
+    });
+  };
 
-  // ============ CATEGORIAS ============
   window.abrirModalCategoria = (id) => {
     editandoCategoriaId = id || null;
     const cats = categoriasSalvas[roleAtual] || [];
@@ -859,7 +887,6 @@
     l.innerHTML = cats.map(c => `<div class="categoria-item" style="border-left-color:${c.cor}"><span class="emoji">${c.emoji}</span><span class="nome">${c.nome}</span><div class="acoes"><button class="btn-mini" onclick="abrirModalCategoria(${c.id})">✏️</button><button class="btn-mini" onclick="removerCategoria(${c.id})">✕</button></div></div>`).join('');
   }
 
-  // ============ GASTOS ============
   window.adicionarGasto = async () => {
     if (meuPapel !== 'admin') { toast('Só admin', 'erro'); return; }
     const r = roles[roleAtual]; if (!r) return;
@@ -882,6 +909,78 @@
       toast('Gasto adicionado!', 'sucesso', '💸');
     } catch(e) { toast('Erro: '+e.message, 'erro'); }
   };
+
+  window.abrirModalEditarGasto = (id) => {
+    if (meuPapel !== 'admin') return;
+    const r = roles[roleAtual];
+    const g = r.gastos.find(x => x.id === id);
+    if (!g) { toast('Gasto não encontrado', 'erro'); return; }
+    editandoGastoId = id;
+
+    document.getElementById('editDescricao').value = g.descricao;
+    document.getElementById('editValor').value = g.valor;
+
+    // Categorias
+    const cats = categoriasSalvas[roleAtual] || [];
+    const sc = document.getElementById('editCategoria');
+    sc.innerHTML = '';
+    cats.forEach(c => {
+      const o = document.createElement('option');
+      o.value = c.id; o.textContent = `${c.emoji} ${c.nome}`;
+      if (c.id === g.categoriaId) o.selected = true;
+      sc.appendChild(o);
+    });
+
+    // Pagador
+    const sp = document.getElementById('editPagador');
+    sp.innerHTML = '';
+    r.participantes.forEach(p => {
+      const o = document.createElement('option');
+      o.value = p; o.textContent = p;
+      if (p === g.pagador) o.selected = true;
+      sp.appendChild(o);
+    });
+
+    // Participantes
+    const ec = document.getElementById('editCheckParticipantes');
+    ec.innerHTML = r.participantes.map(p => {
+      const checked = g.participantes.includes(p);
+      return `<label class="check-item ${checked ? 'ativo' : ''}"><input type="checkbox" value="${p}" ${checked ? 'checked' : ''}><span>${p}</span></label>`;
+    }).join('');
+    ec.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.addEventListener('change', e => {
+      const l = e.target.closest('.check-item');
+      if (e.target.checked) l.classList.add('ativo'); else l.classList.remove('ativo');
+    }));
+
+    document.getElementById('modalEditarGasto').classList.add('ativo');
+  };
+
+  window.salvarEdicaoGasto = async () => {
+    if (meuPapel !== 'admin') return;
+    const descricao = document.getElementById('editDescricao').value.trim();
+    const valor = parseFloat(document.getElementById('editValor').value);
+    const categoriaId = parseInt(document.getElementById('editCategoria').value);
+    const pagador = document.getElementById('editPagador').value;
+    const parts = [];
+    document.querySelectorAll('#editCheckParticipantes input[type="checkbox"]:checked').forEach(cb => parts.push(cb.value));
+
+    if (!descricao || !valor || valor <= 0) { toast('Preencha descrição e valor!', 'erro'); return; }
+    if (!categoriaId) { toast('Categoria inválida!', 'erro'); return; }
+    if (!pagador) { toast('Selecione quem pagou!', 'erro'); return; }
+    if (parts.length === 0) { toast('1+ participante!', 'erro'); return; }
+
+    const r = roles[roleAtual];
+    const novos = r.gastos.map(g => g.id === editandoGastoId
+      ? { ...g, descricao, valor, categoriaId, pagador, participantes: parts }
+      : g
+    );
+    try {
+      await salvarRole(roleAtual, { gastos: novos });
+      fecharModalEditarGasto();
+      toast('Gasto atualizado!', 'sucesso', '✏️');
+    } catch(e) { toast('Erro: '+e.message, 'erro'); }
+  };
+
   window.removerGasto = async (id) => {
     if (meuPapel !== 'admin') return;
     if (!confirm('Remover?')) return;
@@ -889,7 +988,6 @@
     try { await salvarRole(roleAtual, { gastos: novos }); toast('Removido', 'info'); } catch(e) { toast('Erro: '+e.message, 'erro'); }
   };
 
-  // ============ PARTICIPANTES ============
   window.adicionarParticipante = async () => {
     if (meuPapel !== 'admin') return;
     const r = roles[roleAtual];
@@ -898,7 +996,14 @@
     if (r.participantes.includes(nome)) { toast('Já está!', 'aviso'); return; }
     if (r.vagas && r.participantes.length >= r.vagas) { toast(`Lotado ${r.participantes.length}/${r.vagas}`, 'erro'); return; }
     const novos = [...r.participantes, nome];
-    try { await salvarRole(roleAtual, { participantes: novos }); document.getElementById('nomeNovoParticipante').value = ''; toast(`${nome} adicionado!`); } catch(e) { toast('Erro: '+e.message, 'erro'); }
+    try {
+      await salvarRole(roleAtual, { participantes: novos });
+      document.getElementById('nomeNovoParticipante').value = '';
+      toast(`${nome} adicionado!`, 'sucesso');
+      if (r.gastos && r.gastos.length > 0) {
+        setTimeout(() => toast(`⚠️ ${nome} ainda não participa de nenhum gasto. Edite os gastos pra incluir.`, 'aviso'), 1000);
+      }
+    } catch(e) { toast('Erro: '+e.message, 'erro'); }
   };
   window.removerParticipante = async (nome) => {
     if (meuPapel !== 'admin') return;
@@ -907,7 +1012,6 @@
     try { await salvarRole(roleAtual, { participantes: novos }); toast('Removido', 'info'); } catch(e) { toast('Erro: '+e.message, 'erro'); }
   };
 
-  // ============ EDITAR NOME ============
   window.abrirModalEditarNome = (nome) => {
     editandoParticipanteNome = nome;
     document.getElementById('textoModalEditarNome').innerHTML = `Alterar nome de <strong>${nome}</strong>`;
@@ -933,7 +1037,6 @@
     } catch(e) { toast('Erro: '+e.message, 'erro'); }
   };
 
-  // ============ CÁLCULOS ============
   function fmtR(v) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
   function calcSaldos() {
     const r = roles[roleAtual]; const s = {};
@@ -971,7 +1074,6 @@
     try { await salvarRole(roleAtual, { acertosPagos: ap }); toast(idx >= 0 ? 'Desmarcado' : 'Pago!', idx >= 0 ? 'info' : 'sucesso', idx >= 0 ? null : '✅'); } catch(e) { toast('Erro: '+e.message, 'erro'); }
   };
 
-  // ============ RENDER ============
   function renderizar() {
     const r = roles[roleAtual]; if (!r) return;
     document.getElementById('subtituloRole').textContent = r.participantes.length + ' participante(s)';
@@ -979,7 +1081,22 @@
 
     const lg = document.getElementById('listaGastos');
     if (r.gastos.length === 0) lg.innerHTML = '<div class="empty"><span class="emoji">🧾</span>Nenhum gasto.</div>';
-    else lg.innerHTML = r.gastos.map(g => { const c = acharCat(g.categoriaId); return `<div class="gasto-item" style="border-left-color:${c.cor}"><div class="gasto-info"><div class="nome">${g.descricao}<span class="tag" style="background:${c.cor};color:#fff;">${c.emoji} ${c.nome}</span></div><div class="pagador">💳 ${g.pagador}</div><div class="participantes-info">👥 ${g.participantes.length}</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;"><span class="gasto-valor">${fmtR(g.valor)}</span>${meuPapel==='admin'?`<button class="btn btn-danger" onclick="removerGasto(${g.id})">✕</button>`:''}</div></div>`; }).join('');
+    else lg.innerHTML = r.gastos.map(g => {
+      const c = acharCat(g.categoriaId);
+      const totalP = r.participantes.length;
+      const aviso = g.participantes.length < totalP;
+      return `<div class="gasto-item" style="border-left-color:${c.cor}">
+        <div class="gasto-info">
+          <div class="nome">${g.descricao}<span class="tag" style="background:${c.cor};color:#fff;">${c.emoji} ${c.nome}</span></div>
+          <div class="pagador">💳 ${g.pagador}</div>
+          <div class="participantes-info ${aviso ? 'aviso' : ''}">${aviso ? '⚠️' : '👥'} ${g.participantes.length}/${totalP} pessoa(s)</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+          <span class="gasto-valor">${fmtR(g.valor)}</span>
+          ${meuPapel === 'admin' ? `<div style="display:flex;gap:4px;"><button class="btn-mini" onclick="abrirModalEditarGasto(${g.id})" title="Editar">✏️</button><button class="btn btn-danger" onclick="removerGasto(${g.id})">✕</button></div>` : ''}
+        </div>
+      </div>`;
+    }).join('');
 
     const total = r.gastos.reduce((a, g) => a + g.valor, 0);
     const n = r.participantes.length;
@@ -1045,16 +1162,30 @@
     if (meuPapel === 'admin') return;
     const r = roles[roleAtual]; const box = document.getElementById('blocoSituacao');
     const s = calcSaldos(); const meu = s.find(x => x.nome === nomeUsuario);
-    if (!meu || r.gastos.length === 0) { box.innerHTML = `<div class="situacao-box situacao-quite"><div class="rotulo">Sua situação</div><div class="valor-grande">⚖️</div><div class="detalhe">Aguardando gastos</div></div>`; return; }
-    if (meu.saldo > 0.01) box.innerHTML = `<div class="situacao-box situacao-recebe"><div class="rotulo">Sua situação</div><div class="valor-grande">✅ ${fmtR(meu.saldo)}</div><div class="detalhe">A receber</div></div>`;
-    else if (meu.saldo < -0.01) {
-      const meus = acertos.filter(a => a.de === nomeUsuario);
+    if (!meu || r.gastos.length === 0) {
+      box.innerHTML = `<div class="situacao-box situacao-quite"><div class="rotulo">Sua situação</div><div class="valor-grande">⚖️</div><div class="detalhe">Aguardando gastos</div></div>`;
+      return;
+    }
+    if (meu.saldo > 0.01) {
+      box.innerHTML = `<div class="situacao-box situacao-recebe"><div class="rotulo">Sua situação</div><div class="valor-grande">✅ ${fmtR(meu.saldo)}</div><div class="detalhe">A receber</div></div>`;
+    } else if (meu.saldo < -0.01) {
       const tp = todosPagos(nomeUsuario, acertos);
-      let d = 'Você deve';
-      if (tp) d = '✅ Já acertou!';
-      else if (meus.length > 0) d = 'Pague para: ' + meus.map(a => { const p = acharPago(a); return `${a.para} (${fmtR(a.valor)})${p?' ✅':''}`; }).join(', ');
-      box.innerHTML = `<div class="situacao-box situacao-deve"><div class="rotulo">Sua situação</div><div class="valor-grande">❌ ${fmtR(Math.abs(meu.saldo))}</div><div class="detalhe">${d}</div></div>`;
-    } else box.innerHTML = `<div class="situacao-box situacao-quite"><div class="rotulo">Sua situação</div><div class="valor-grande">⚖️ Quite</div><div class="detalhe">Nada a pagar 🎉</div></div>`;
+      if (tp) {
+        // Já acertou → card verde com valor riscado
+        box.innerHTML = `<div class="situacao-box situacao-acertou">
+          <div class="rotulo">✅ Sua situação</div>
+          <div class="valor-grande valor-riscado">${fmtR(Math.abs(meu.saldo))}</div>
+          <div class="detalhe">Você já acertou com todo mundo! 🎉</div>
+        </div>`;
+      } else {
+        const meus = acertos.filter(a => a.de === nomeUsuario);
+        let d = 'Você deve';
+        if (meus.length > 0) d = 'Pague para: ' + meus.map(a => { const p = acharPago(a); return `${a.para} (${fmtR(a.valor)})${p?' ✅':''}`; }).join(', ');
+        box.innerHTML = `<div class="situacao-box situacao-deve"><div class="rotulo">Sua situação</div><div class="valor-grande">❌ ${fmtR(Math.abs(meu.saldo))}</div><div class="detalhe">${d}</div></div>`;
+      }
+    } else {
+      box.innerHTML = `<div class="situacao-box situacao-quite"><div class="rotulo">Sua situação</div><div class="valor-grande">⚖️ Quite</div><div class="detalhe">Nada a pagar 🎉</div></div>`;
+    }
   }
 
   async function recarregarMeusRoles() {
@@ -1100,7 +1231,6 @@
     copiar(t, 'Resumo copiado!');
   };
 
-  // ============ INIT ============
   async function init() {
     carregarLocal();
     document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('ativo'); }));
