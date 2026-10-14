@@ -44,7 +44,7 @@
   .evento-card .info { font-size: 12px; color: #94a3b8; }
   .evento-card .data-info { font-size: 13px; color: #3b82f6; margin-top: 6px; font-weight: 600; }
   .check-participantes { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; }
-  .check-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: #0f172a; border-radius: 8px; cursor: pointer; border: 1px solid #334155; font-size: 14px; }
+  .check-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: #0f172a; border-radius: 8px; cursor: pointer; border: 1px solid #334155; font-size: 14px; transition: all 0.15s; }
   .check-item.ativo { border-color: #10b981; background: rgba(16, 185, 129, 0.1); }
   .check-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: #10b981; cursor: pointer; flex-shrink: 0; }
   .resumo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
@@ -54,7 +54,8 @@
   .valor.total { color: #3b82f6; }
   .valor.cota { color: #f59e0b; }
   .valor.pessoas { color: #8b5cf6; }
-  .gasto-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #0f172a; border-radius: 10px; margin-bottom: 8px; border-left: 3px solid #10b981; gap: 8px; }
+  .gasto-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #0f172a; border-radius: 10px; margin-bottom: 8px; border-left: 3px solid #10b981; gap: 8px; transition: opacity 0.3s; }
+  .gasto-item.sincronizando { opacity: 0.5; }
   .gasto-info { flex: 1; min-width: 0; }
   .gasto-info .nome { font-weight: 600; font-size: 14px; }
   .gasto-info .pagador { font-size: 12px; color: #94a3b8; margin-top: 2px; }
@@ -150,6 +151,30 @@
   .loading-spinner { width: 48px; height: 48px; border-radius: 50%; border: 4px solid #334155; border-top-color: #10b981; animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
   .loading-text { color: #94a3b8; font-size: 14px; font-weight: 600; }
+  /* ⭐ PREVIEW DO RACHA EM TEMPO REAL */
+  .preview-racha {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(59, 130, 246, 0.08));
+    border: 1px solid #10b981; border-radius: 10px;
+    padding: 12px; margin-top: 10px; font-size: 13px;
+  }
+  .preview-racha .cabeca {
+    font-weight: 700; color: #10b981; margin-bottom: 8px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 14px;
+  }
+  .preview-racha .linha {
+    display: flex; justify-content: space-between;
+    padding: 4px 0; font-size: 13px;
+  }
+  .preview-racha .linha .nome-pessoa { color: #e2e8f0; }
+  .preview-racha .linha .valor-pessoa { color: #10b981; font-weight: 700; }
+  .preview-racha .aviso-nao-participa {
+    color: #f59e0b; font-size: 12px; margin-top: 6px;
+    padding-top: 6px; border-top: 1px dashed #334155;
+  }
+  .preview-racha .aviso-vazio {
+    color: #ef4444; font-size: 13px; font-weight: 600;
+  }
   @media (max-width: 400px) {
     header h1 { font-size: 24px; }
     .check-participantes { grid-template-columns: 1fr; }
@@ -235,6 +260,8 @@
             <button class="btn btn-secondary" style="padding:8px;font-size:12px;" onclick="marcarTodos(true)">✅ Todos</button>
             <button class="btn btn-secondary" style="padding:8px;font-size:12px;" onclick="marcarTodos(false)">❌ Nenhum</button>
           </div>
+          <!-- ⭐ PREVIEW EM TEMPO REAL -->
+          <div class="preview-racha" id="previewRacha"></div>
         </div>
         <button class="btn btn-primary" onclick="adicionarGasto()">Adicionar Gasto</button>
       </div>
@@ -291,6 +318,7 @@
   </div>
 </div>
 
+<!-- Modais (resumidos para economizar espaço) -->
 <div class="modal-overlay" id="modalCriar">
   <div class="modal">
     <button class="btn-fechar" onclick="fecharModalCriar()">✕</button>
@@ -356,6 +384,7 @@
         <button class="btn btn-secondary" style="padding:8px;font-size:12px;" onclick="marcarTodosEdit(true)">✅ Todos</button>
         <button class="btn btn-secondary" style="padding:8px;font-size:12px;" onclick="marcarTodosEdit(false)">❌ Nenhum</button>
       </div>
+      <div class="preview-racha" id="editPreviewRacha"></div>
     </div>
     <button class="btn btn-primary" onclick="salvarEdicaoGasto()">💾 Salvar Alterações</button>
   </div>
@@ -411,7 +440,10 @@
   };
 
   const app = initializeApp(firebaseConfig);
-  const db = initializeFirestore(app, { experimentalForceLongPolling: true });
+  // ⭐ AUTO-DETECT: usa WebChannel (rápido) e cai pra long-polling só se precisar
+  const db = initializeFirestore(app, {
+    experimentalAutoDetectLongPolling: true
+  });
   const auth = getAuth(app);
 
   let uid = null;
@@ -629,7 +661,6 @@
     }
   });
 
-  // ⭐ AQUI: convidado agora entra automaticamente nos gastos existentes
   window.escolherPapel = async (papel) => {
     const codigo = papelParaAbrir;
     let role = roles[codigo] || await buscarRole(codigo);
@@ -648,11 +679,9 @@
     }
 
     if (!jaP) {
-      // Adiciona aos participantes
       role.participantes.push(nome);
       const dados = { participantes: role.participantes };
 
-      // ⭐ Se tem gastos, inclui automaticamente em todos
       if (role.gastos && role.gastos.length > 0) {
         let incluidos = 0;
         dados.gastos = role.gastos.map(g => {
@@ -667,9 +696,7 @@
           }
         } catch(e) { toast('Erro: ' + e.message, 'erro'); return; }
       } else {
-        try {
-          await salvarRole(codigo, dados);
-        } catch(e) { toast('Erro: ' + e.message, 'erro'); return; }
+        try { await salvarRole(codigo, dados); } catch(e) { toast('Erro: ' + e.message, 'erro'); return; }
       }
     }
 
@@ -863,18 +890,88 @@
     c.innerHTML = r.participantes.map(p => `<label class="check-item ativo"><input type="checkbox" value="${p}" checked><span>${p}</span></label>`).join('');
     c.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.addEventListener('change', e => {
       const l = e.target.closest('.check-item'); if (e.target.checked) l.classList.add('ativo'); else l.classList.remove('ativo');
+      atualizarPreviewRacha();
     }));
+    atualizarPreviewRacha();
   }
   window.marcarTodos = (m) => {
     document.querySelectorAll('#checkParticipantes input[type="checkbox"]').forEach(cb => {
       cb.checked = m; const l = cb.closest('.check-item'); if (m) l.classList.add('ativo'); else l.classList.remove('ativo');
     });
+    atualizarPreviewRacha();
   };
   window.marcarTodosEdit = (m) => {
     document.querySelectorAll('#editCheckParticipantes input[type="checkbox"]').forEach(cb => {
       cb.checked = m; const l = cb.closest('.check-item'); if (m) l.classList.add('ativo'); else l.classList.remove('ativo');
     });
+    atualizarPreviewRachaEdit();
   };
+
+  // ⭐ PREVIEW DO RACHA EM TEMPO REAL
+  function atualizarPreviewRacha() {
+    const r = roles[roleAtual]; if (!r) return;
+    const box = document.getElementById('previewRacha');
+    if (!box) return;
+
+    const valor = parseFloat(document.getElementById('valor').value) || 0;
+    const marcados = [];
+    document.querySelectorAll('#checkParticipantes input[type="checkbox"]:checked').forEach(cb => marcados.push(cb.value));
+    const naoMarcados = r.participantes.filter(p => !marcados.includes(p));
+
+    if (valor <= 0) {
+      box.innerHTML = `<div class="cabeca"><span>💰 Racha</span><span style="color:#94a3b8;font-weight:400;">Digite o valor</span></div>`;
+      return;
+    }
+    if (marcados.length === 0) {
+      box.innerHTML = `<div class="cabeca"><span>💰 Racha</span></div><div class="aviso-vazio">⚠️ Selecione pelo menos 1 pessoa</div>`;
+      return;
+    }
+
+    const cota = valor / marcados.length;
+
+    let html = `<div class="cabeca"><span>💰 ${marcados.length} pessoa(s)</span><span>${fmtR(cota)} cada</span></div>`;
+    marcados.forEach(p => {
+      html += `<div class="linha"><span class="nome-pessoa">${p}</span><span class="valor-pessoa">${fmtR(cota)}</span></div>`;
+    });
+    if (naoMarcados.length > 0) {
+      html += `<div class="aviso-nao-participa">⚠️ Não participa: ${naoMarcados.join(', ')}</div>`;
+    }
+    box.innerHTML = html;
+  }
+
+  function atualizarPreviewRachaEdit() {
+    const r = roles[roleAtual]; if (!r) return;
+    const box = document.getElementById('editPreviewRacha');
+    if (!box) return;
+
+    const valor = parseFloat(document.getElementById('editValor').value) || 0;
+    const marcados = [];
+    document.querySelectorAll('#editCheckParticipantes input[type="checkbox"]:checked').forEach(cb => marcados.push(cb.value));
+    const naoMarcados = r.participantes.filter(p => !marcados.includes(p));
+
+    if (valor <= 0) {
+      box.innerHTML = `<div class="cabeca"><span>💰 Racha</span><span style="color:#94a3b8;font-weight:400;">Digite o valor</span></div>`;
+      return;
+    }
+    if (marcados.length === 0) {
+      box.innerHTML = `<div class="cabeca"><span>💰 Racha</span></div><div class="aviso-vazio">⚠️ Selecione pelo menos 1 pessoa</div>`;
+      return;
+    }
+
+    const cota = valor / marcados.length;
+    let html = `<div class="cabeca"><span>💰 ${marcados.length} pessoa(s)</span><span>${fmtR(cota)} cada</span></div>`;
+    marcados.forEach(p => {
+      html += `<div class="linha"><span class="nome-pessoa">${p}</span><span class="valor-pessoa">${fmtR(cota)}</span></div>`;
+    });
+    if (naoMarcados.length > 0) {
+      html += `<div class="aviso-nao-participa">⚠️ Não participa: ${naoMarcados.join(', ')}</div>`;
+    }
+    box.innerHTML = html;
+  }
+
+  // Também atualiza quando muda o VALOR
+  document.getElementById('valor').addEventListener('input', atualizarPreviewRacha);
+  document.getElementById('editValor').addEventListener('input', atualizarPreviewRachaEdit);
 
   window.abrirModalCategoria = (id) => {
     editandoCategoriaId = id || null;
@@ -976,9 +1073,11 @@
     ec.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.addEventListener('change', e => {
       const l = e.target.closest('.check-item');
       if (e.target.checked) l.classList.add('ativo'); else l.classList.remove('ativo');
+      atualizarPreviewRachaEdit();
     }));
 
     document.getElementById('modalEditarGasto').classList.add('ativo');
+    setTimeout(atualizarPreviewRachaEdit, 50);
   };
 
   window.salvarEdicaoGasto = async () => {
