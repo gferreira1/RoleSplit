@@ -629,6 +629,7 @@
     }
   });
 
+  // ⭐ AQUI: convidado agora entra automaticamente nos gastos existentes
   window.escolherPapel = async (papel) => {
     const codigo = papelParaAbrir;
     let role = roles[codigo] || await buscarRole(codigo);
@@ -647,8 +648,29 @@
     }
 
     if (!jaP) {
+      // Adiciona aos participantes
       role.participantes.push(nome);
-      try { await salvarRole(codigo, { participantes: role.participantes }); } catch(e) { toast('Erro: ' + e.message, 'erro'); return; }
+      const dados = { participantes: role.participantes };
+
+      // ⭐ Se tem gastos, inclui automaticamente em todos
+      if (role.gastos && role.gastos.length > 0) {
+        let incluidos = 0;
+        dados.gastos = role.gastos.map(g => {
+          if (g.participantes.includes(nome)) return g;
+          incluidos++;
+          return { ...g, participantes: [...g.participantes, nome] };
+        });
+        try {
+          await salvarRole(codigo, dados);
+          if (incluidos > 0) {
+            setTimeout(() => toast(`✅ Você foi incluído em ${incluidos} gasto(s)`, 'sucesso', '💸'), 800);
+          }
+        } catch(e) { toast('Erro: ' + e.message, 'erro'); return; }
+      } else {
+        try {
+          await salvarRole(codigo, dados);
+        } catch(e) { toast('Erro: ' + e.message, 'erro'); return; }
+      }
     }
 
     nomeUsuario = nome;
@@ -992,7 +1014,6 @@
     try { await salvarRole(roleAtual, { gastos: novos }); toast('Removido', 'info'); } catch(e) { toast('Erro: '+e.message, 'erro'); }
   };
 
-  // ⭐ ADICIONAR PARTICIPANTE (agora com modal de confirmação)
   window.adicionarParticipante = async () => {
     if (meuPapel !== 'admin') return;
     const r = roles[roleAtual];
@@ -1001,13 +1022,11 @@
     if (r.participantes.includes(nome)) { toast('Já está!', 'aviso'); return; }
     if (r.vagas && r.participantes.length >= r.vagas) { toast(`Lotado ${r.participantes.length}/${r.vagas}`, 'erro'); return; }
 
-    // Se não tem gastos, adiciona direto
     if (!r.gastos || r.gastos.length === 0) {
       await adicionarParticipanteFirestore(nome, false);
       return;
     }
 
-    // Tem gastos: mostra modal perguntando
     novoParticipanteTmp = nome;
     document.getElementById('textoModalNovoParticipante').innerHTML =
       `Adicionar <strong>${nome}</strong> ao role?<br><br>Há <strong>${r.gastos.length} gasto(s)</strong> lançado(s).`;
