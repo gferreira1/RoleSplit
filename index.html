@@ -859,14 +859,30 @@
     if (cats.length === 0) { const o = document.createElement('option'); o.value = ''; o.textContent = '⚠️ Crie categoria'; s.appendChild(o); }
     else { cats.forEach(c => { const o = document.createElement('option'); o.value = c.id; o.textContent = `${c.emoji} ${c.nome}`; s.appendChild(o); }); if (cats.some(c => String(c.id) === v)) s.value = v; }
   }
-  function renderizarCheckParticipantes() {
+function renderizarCheckParticipantes() {
     const r = roles[roleAtual]; if (!r) return;
     const c = document.getElementById('checkParticipantes');
-    c.innerHTML = r.participantes.map(p => `<label class="check-item ativo"><input type="checkbox" value="${p}" checked><span>${p}</span></label>`).join('');
+    
+    // 1. Salva quem o usuário JÁ tinha desmarcado antes de reescrever o HTML
+    const desmarcadosAtuais = [];
+    c.querySelectorAll('input[type="checkbox"]:not(:checked)').forEach(cb => {
+      desmarcadosAtuais.push(cb.value);
+    });
+
+    // 2. Monta o HTML aplicando o 'checked' apenas para quem NÃO estava desmarcado
+    c.innerHTML = r.participantes.map(p => {
+      const estaMarcado = !desmarcadosAtuais.includes(p);
+      return `<label class="check-item ${estaMarcado ? 'ativo' : ''}"><input type="checkbox" value="${p}" ${estaMarcado ? 'checked' : ''}><span>${p}</span></label>`;
+    }).join('');
+
+    // 3. Reaplica o evento de escuta
     c.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.addEventListener('change', e => {
-      const l = e.target.closest('.check-item'); if (e.target.checked) l.classList.add('ativo'); else l.classList.remove('ativo');
+      const l = e.target.closest('.check-item'); 
+      if (e.target.checked) l.classList.add('ativo'); 
+      else l.classList.remove('ativo');
       atualizarPreviewRacha();
     }));
+    
     atualizarPreviewRacha();
   }
   window.marcarTodos = (m) => {
