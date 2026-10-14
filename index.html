@@ -318,7 +318,7 @@
   </div>
 </div>
 
-<!-- Modais (resumidos para economizar espaço) -->
+<!-- Modais -->
 <div class="modal-overlay" id="modalCriar">
   <div class="modal">
     <button class="btn-fechar" onclick="fecharModalCriar()">✕</button>
@@ -440,10 +440,7 @@
   };
 
   const app = initializeApp(firebaseConfig);
-  // ⭐ AUTO-DETECT: usa WebChannel (rápido) e cai pra long-polling só se precisar
-  const db = initializeFirestore(app, {
-    experimentalAutoDetectLongPolling: true
-  });
+  const db = initializeFirestore(app, { experimentalAutoDetectLongPolling: true });
   const auth = getAuth(app);
 
   let uid = null;
@@ -907,7 +904,7 @@
     atualizarPreviewRachaEdit();
   };
 
-  // ⭐ PREVIEW DO RACHA EM TEMPO REAL
+  // ⭐ PREVIEW DO RACHA EM TEMPO REAL — com lista nominal
   function atualizarPreviewRacha() {
     const r = roles[roleAtual]; if (!r) return;
     const box = document.getElementById('previewRacha');
