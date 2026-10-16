@@ -5,7 +5,7 @@
 // Veja o passo a passo na última mensagem
 // ============================================
 
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: "AIzaSyAMlmIvyXaj_UoqaYgx9tfmRRtiDBQ_GcA",
   authDomain: "rolesplit.firebaseapp.com",
   projectId: "rolesplit",

@@ -7,119 +7,8 @@
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0f172a">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍖</text></svg>">
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
-  body { background: #0f172a; color: #e2e8f0; min-height: 100vh; padding-bottom: 90px; overflow-x: hidden; }
-  ::-webkit-scrollbar { display: none; }
-  * { -ms-overflow-style: none; scrollbar-width: none; }
-  input, select, textarea { user-select: text; -webkit-user-select: text; }
-  .container { max-width: 600px; margin: 0 auto; padding: 16px; }
-  header { text-align: center; padding: 16px 0 12px; }
-  header h1 { font-size: 26px; background: linear-gradient(135deg, #10b981, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 900; }
-  header p { color: #94a3b8; font-size: 13px; margin-top: 2px; }
-  .card { background: #1e293b; border-radius: 18px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.25); border: 1px solid rgba(51, 65, 85, 0.4); }
-  .card h2 { font-size: 16px; margin-bottom: 12px; color: #f1f5f9; }
-  .input-group { margin-bottom: 12px; }
-  label { display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-  input, select, textarea { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #334155; background: #0f172a; color: #e2e8f0; font-size: 15px; outline: none; transition: border 0.2s; }
-  input:focus, select:focus, textarea:focus { border-color: #10b981; }
-  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .btn { width: 100%; padding: 15px; border-radius: 14px; border: none; font-size: 15px; font-weight: 800; cursor: pointer; transition: transform 0.12s ease; display: flex; align-items: center; justify-content: center; gap: 8px; }
-  .btn:active { transform: scale(0.96); }
-  .btn-primary { background: linear-gradient(135deg, #10b981, #059669); color: white; }
-  .btn-secondary { background: #334155; color: #e2e8f0; }
-  .btn-whats { background: linear-gradient(135deg, #25d366, #128c7e); color: white; }
-  .btn-danger { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
-  .btn-sm { padding: 8px 12px; font-size: 12px; width: auto; border-radius: 10px; }
-  .card-destaque { background: #1e293b; border-radius: 20px; overflow: hidden; margin-bottom: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.35); cursor: pointer; border: 1px solid rgba(51, 65, 85, 0.6); }
-  .card-destaque:active { transform: scale(0.97); }
-  .card-destaque .capa { height: 190px; background-size: cover; background-position: center; position: relative; background-color: #0f172a; }
-  .card-destaque .badge-tipo { position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); color: white; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
-  .card-destaque .badge-privado { position: absolute; top: 12px; right: 12px; background: rgba(59, 130, 246, 0.9); backdrop-filter: blur(4px); color: white; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; }
-  .card-destaque .conteudo { padding: 16px; }
-  .card-destaque .titulo { font-size: 19px; font-weight: 800; margin-bottom: 6px; color: #fff; }
-  .card-destaque .data { font-size: 13px; color: #93c5fd; font-weight: 600; margin-bottom: 4px; }
-  .card-destaque .local { font-size: 12px; color: #94a3b8; }
-  .grid-eventos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
-  .card-mini { background: #1e293b; border-radius: 14px; overflow: hidden; cursor: pointer; border: 1px solid rgba(51, 65, 85, 0.5); }
-  .card-mini:active { transform: scale(0.96); }
-  .card-mini .capa { height: 105px; background-size: cover; background-position: center; background-color: #0f172a; }
-  .card-mini .conteudo { padding: 10px; }
-  .card-mini .titulo { font-size: 13px; font-weight: 800; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .card-mini .data { font-size: 11px; color: #93c5fd; font-weight: 600; margin-top: 2px; }
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.82); backdrop-filter: blur(6px); display: none; align-items: flex-end; justify-content: center; z-index: 200; }
-  .modal-overlay.ativo { display: flex; }
-  .modal-overlay.center { align-items: center; }
-  .modal-sheet { background: #1e293b; border-top-left-radius: 24px; border-top-right-radius: 24px; width: 100%; max-width: 600px; max-height: 92vh; overflow-y: auto; position: relative; padding-bottom: 90px; animation: slideUp 0.25s cubic-bezier(0.1, 0.9, 0.2, 1); }
-  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-  .modal-sheet .banner { width: 100%; height: 200px; background-size: cover; background-position: center; position: relative; background-color: #0f172a; }
-  .modal-sheet .btn-fechar { position: absolute; top: 14px; right: 14px; width: 36px; height: 36px; border-radius: 50%; background: rgba(15, 23, 42, 0.8); color: #fff; border: none; font-size: 18px; font-weight: 800; cursor: pointer; z-index: 10; }
-  .modal-sheet .body-content { padding: 20px; }
-  .modal-sheet .rodape-fixo { position: sticky; bottom: 0; left: 0; right: 0; padding: 16px 20px; background: #1e293b; border-top: 1px solid #334155; z-index: 30; }
-  .modal-nome { background: #1e293b; border-radius: 24px; padding: 28px 24px; width: 90%; max-width: 400px; animation: popIn 0.3s cubic-bezier(0.1, 0.9, 0.2, 1.1); box-shadow: 0 20px 60px rgba(0,0,0,0.5); border: 1px solid rgba(51, 65, 85, 0.6); }
-  @keyframes popIn { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-  .modal-nome .emoji { font-size: 48px; text-align: center; margin-bottom: 8px; }
-  .modal-nome h2 { font-size: 22px; font-weight: 900; text-align: center; color: #fff; margin-bottom: 6px; }
-  .modal-nome p { font-size: 13px; color: #94a3b8; text-align: center; margin-bottom: 20px; }
-  .vagas-barra-bg { width: 100%; height: 8px; background: #0f172a; border-radius: 4px; overflow: hidden; margin: 8px 0; }
-  .vagas-barra-fill { height: 100%; background: linear-gradient(90deg, #10b981, #3b82f6); border-radius: 4px; transition: width 0.3s; }
-  .avatares-lista { display: flex; align-items: center; gap: 4px; margin-top: 8px; flex-wrap: wrap; }
-  .avatar-item { width: 32px; height: 32px; border-radius: 50%; background: #334155; color: #fff; font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; border: 2px solid #1e293b; }
-  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(10px); border-top: 1px solid #334155; display: flex; justify-content: space-around; align-items: center; padding: 10px 0 max(10px, env(safe-area-inset-bottom)); z-index: 90; }
-  .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 4px; cursor: pointer; background: none; border: none; color: #94a3b8; font-size: 10px; font-weight: 800; text-transform: uppercase; }
-  .nav-item .icone { font-size: 22px; line-height: 1; }
-  .nav-item.ativo { color: #10b981; }
-  .tela { display: none; }
-  .tela.ativa { display: block; }
-  .perfil-avatar { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #10b981, #3b82f6); display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 900; color: white; margin: 0 auto 12px; }
-  .loading-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 16px; z-index: 10000; padding: 20px; }
-  .loading-spinner { width: 48px; height: 48px; border-radius: 50%; border: 4px solid #334155; border-top-color: #10b981; animation: spin 0.8s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { color: #94a3b8; font-size: 14px; font-weight: 600; text-align: center; }
-  .empty { text-align: center; color: #64748b; padding: 30px 16px; font-size: 14px; }
-  .topbar { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
-  .topbar button { background: #334155; border: none; color: white; padding: 8px 14px; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; }
-  .item-gasto { display: flex; justify-content: space-between; align-items: center; background: #0f172a; padding: 12px; border-radius: 12px; margin-bottom: 8px; border-left: 3px solid #10b981; }
-  .item-gasto .info { flex: 1; min-width: 0; }
-  .item-gasto .desc { font-weight: 700; color: #fff; font-size: 14px; }
-  .item-gasto .quem { font-size: 11px; color: #94a3b8; margin-top: 2px; }
-  .item-gasto .valor { font-weight: 800; color: #10b981; }
-  .item-gasto .btn-del { background: rgba(239,68,68,0.15); color: #f87171; border: none; padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 800; cursor: pointer; margin-left: 8px; }
-  .item-saldo { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-radius: 10px; margin-bottom: 8px; font-weight: 700; }
-  .saldo-receber { background: rgba(16, 185, 129, 0.15); color: #10b981; border-left: 3px solid #10b981; }
-  .saldo-pagar { background: rgba(239, 68, 68, 0.15); color: #ef4444; border-left: 3px solid #ef4444; }
-  .saldo-ok { background: rgba(148, 163, 184, 0.15); color: #94a3b8; border-left: 3px solid #94a3b8; }
-  .item-acerto { display: flex; justify-content: space-between; align-items: center; background: #0f172a; padding: 12px; border-radius: 10px; margin-bottom: 8px; border-left: 4px solid #3b82f6; gap: 8px; }
-  .abas { display: flex; gap: 4px; margin-bottom: 16px; background: #0f172a; padding: 4px; border-radius: 12px; }
-  .aba { flex: 1; padding: 10px; text-align: center; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 800; color: #94a3b8; transition: all 0.2s; border: none; background: transparent; }
-  .aba.ativa { background: #10b981; color: white; }
-  .resumo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
-  .resumo-item { background: #0f172a; padding: 12px; border-radius: 12px; text-align: center; }
-  .resumo-item .label { font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: 700; }
-  .resumo-item .valor { font-size: 18px; font-weight: 900; margin-top: 4px; }
-  .resumo-item .valor.total { color: #3b82f6; }
-  .resumo-item .valor.cota { color: #f59e0b; }
-  .resumo-item .valor.pessoas { color: #8b5cf6; }
-  .check-participantes { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; }
-  .check-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: #0f172a; border-radius: 10px; cursor: pointer; border: 1px solid #334155; font-size: 13px; font-weight: 600; }
-  .check-item.ativo { border-color: #10b981; background: rgba(16, 185, 129, 0.1); }
-  .check-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: #10b981; cursor: pointer; flex-shrink: 0; }
-  .preview-img { width: 100%; height: 120px; border-radius: 12px; background-size: cover; background-position: center; background-color: #0f172a; margin-top: 8px; border: 1px solid #334155; }
-  .toggle-privado { display: flex; align-items: center; justify-content: space-between; background: #0f172a; padding: 12px 14px; border-radius: 12px; border: 1px solid #334155; cursor: pointer; }
-  .toggle-privado.ativo { border-color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
-  .toggle-privado .info { flex: 1; }
-  .toggle-privado .titulo { font-size: 14px; font-weight: 700; color: #e2e8f0; }
-  .toggle-privado .desc { font-size: 11px; color: #94a3b8; margin-top: 2px; }
-  .toggle-privado .switch { width: 44px; height: 24px; border-radius: 12px; background: #334155; position: relative; transition: background 0.2s; flex-shrink: 0; margin-left: 10px; }
-  .toggle-privado.ativo .switch { background: #3b82f6; }
-  .toggle-privado .switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: white; transition: transform 0.2s; }
-  .toggle-privado.ativo .switch::after { transform: translateX(20px); }
-  .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: #10b981; color: white; padding: 12px 20px; border-radius: 12px; font-weight: 700; font-size: 14px; z-index: 9999; opacity: 0; transition: opacity 0.3s; box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4); max-width: 90%; text-align: center; }
-  .toast.ativo { opacity: 1; }
-  .toast.erro { background: #ef4444; box-shadow: 0 8px 24px rgba(239, 68, 68, 0.4); }
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -155,7 +44,7 @@
           </select>
           <div class="preview-img" id="previewImagem"></div>
         </div>
-        <div class="input-group"><label>Local (opcional)</label><input type="text" id="novoLocal" placeholder="Ex: Casa do Douglas"></div>
+        <div class="input-group"><label>Local (opcional)</label><input type="text" id="novoLocal" placeholder="Ex: Casa"></div>
         <div class="input-group"><label>Cidade</label><input type="text" id="novoCidade" placeholder="Ex: Santa Cruz do Sul"></div>
         <div class="input-group">
           <label>Privacidade</label>
@@ -179,23 +68,7 @@
 
   <div class="tela" id="tela-perfil">
     <header><h1>👤 Meu Perfil</h1></header>
-    <div class="card" style="text-align:center;">
-      <div class="perfil-avatar" id="avatarPerfil">?</div>
-      <h3 id="nomePerfilDisplay" style="font-size:20px; font-weight:800;">...</h3>
-      <p style="font-size:12px; color:#94a3b8; margin-top:2px;">Seu nome no aplicativo</p>
-      <button class="btn btn-secondary" style="margin-top:16px;" onclick="abrirModalNome(true)">✏️ Trocar Nome</button>
-    </div>
-    <div class="card">
-      <h2>🔑 Entrar em Role por Código</h2>
-      <div class="input-group">
-        <input type="text" id="inputCodigoEntrar" placeholder="Ex: X7K9" maxlength="6" style="text-transform:uppercase; text-align:center; font-size:20px; letter-spacing:4px; font-weight:800;">
-      </div>
-      <button class="btn btn-primary" onclick="entrarComCodigo()">🎯 Acessar Role</button>
-    </div>
-    <div class="card">
-      <h2>📊 Estatísticas</h2>
-      <div id="statsPerfil" style="font-size:14px; color:#94a3b8;">Carregando...</div>
-    </div>
+    <div id="perfilConteudo"></div>
   </div>
 
   <div class="tela" id="tela-painel">
@@ -322,15 +195,78 @@
   </div>
 </div>
 
-<div class="modal-overlay center" id="modalNome">
-  <div class="modal-nome">
-    <div class="emoji">🍖</div>
-    <h2 id="modalNomeTitulo">Bem-vindo!</h2>
-    <p id="modalNomeDesc">Como você quer ser chamado?</p>
-    <div class="input-group">
-      <input type="text" id="inputNomeUsuario" placeholder="Digite seu nome ou apelido" maxlength="20" autofocus>
+<!-- MODAL LOGIN -->
+<div class="modal-overlay center" id="modalLogin">
+  <div class="modal-auth">
+    <div class="emoji">🔐</div>
+    <h2>Entrar</h2>
+    <p class="sub">Faça login pra continuar</p>
+    <div class="input-group"><label>E-mail *</label><input type="email" id="loginEmail" placeholder="seu@email.com"></div>
+    <div class="input-group"><label>Senha *</label><input type="password" id="loginSenha" placeholder="••••••••"></div>
+    <button class="btn btn-primary" onclick="fazerLogin()">Entrar</button>
+    <span class="link" onclick="trocarModalAuth('cadastro')">Não tem conta? <strong>Criar conta</strong></span>
+    <span class="link" onclick="fecharModalAuth()" style="color:#94a3b8;">Agora não</span>
+  </div>
+</div>
+
+<!-- MODAL CADASTRO -->
+<div class="modal-overlay center" id="modalCadastro">
+  <div class="modal-auth">
+    <div class="emoji">✨</div>
+    <h2>Criar Conta</h2>
+    <p class="sub">Leva 10 segundos</p>
+    <div class="row">
+      <div class="input-group"><label>Nome *</label><input type="text" id="cadNome" placeholder="Ex: João" maxlength="30"></div>
+      <div class="input-group"><label>Sobrenome *</label><input type="text" id="cadSobrenome" placeholder="Ex: Silva" maxlength="30"></div>
     </div>
-    <button class="btn btn-primary" onclick="salvarNome()" style="margin-top:8px;">Começar 🚀</button>
+    <div class="input-group"><label>E-mail *</label><input type="email" id="cadEmail" placeholder="seu@email.com"></div>
+    <div class="input-group">
+      <label>Senha *</label>
+      <input type="password" id="cadSenha" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
+      <div class="forca-senha" id="forcaSenha" style="display:none;">
+        <div class="forca-barra">
+          <div class="forca-fill" id="forcaFill"></div>
+        </div>
+        <div class="forca-label" id="forcaLabel"></div>
+      </div>
+      <div class="senha-req" id="senhaReq" style="display:none;">
+        <div class="req" data-req="min8"><span class="icone-req">⭕</span> 8+ caracteres</div>
+        <div class="req" data-req="letra"><span class="icone-req">⭕</span> Pelo menos 1 letra</div>
+        <div class="req" data-req="numero"><span class="icone-req">⭕</span> Pelo menos 1 número</div>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="fazerCadastro()">Criar Conta</button>
+    <span class="link" onclick="trocarModalAuth('login')">Já tem conta? <strong>Entrar</strong></span>
+    <span class="link" onclick="fecharModalAuth()" style="color:#94a3b8;">Agora não</span>
+  </div>
+</div>
+<!-- MODAL EXCLUIR CONTA -->
+<div class="modal-overlay center" id="modalExcluir">
+  <div class="modal-auth">
+    <div class="emoji">⚠️</div>
+    <h2>Excluir Conta</h2>
+    <p class="sub">Isso não pode ser desfeito</p>
+    <div class="aviso-vermelho">
+      <strong>⚠️ ATENÇÃO:</strong> Isso vai <strong>apagar sua conta e todos os seus dados permanentemente</strong>. Não tem como recuperar depois.
+    </div>
+    <div id="avisoTransferir" style="display:none; background: rgba(59,130,246,0.15); border: 1px solid #3b82f6; border-radius:12px; padding:12px; margin-bottom:16px; font-size:13px; color:#93c5fd;">
+      Você é admin de alguns roles. Vamos transferir antes de excluir.
+    </div>
+    <div class="input-group"><label>Digite sua senha pra confirmar *</label><input type="password" id="excluirSenha" placeholder="••••••••"></div>
+    <button class="btn btn-vermelho" onclick="confirmarExclusao()">🗑️ Excluir Conta Pra Sempre</button>
+    <span class="link" onclick="fecharModalExcluir()" style="color:#94a3b8;">Cancelar</span>
+  </div>
+</div>
+
+<!-- MODAL TRANSFERIR ROLES -->
+<div class="modal-overlay center" id="modalTransferir">
+  <div class="modal-auth">
+    <div class="emoji">🔄</div>
+    <h2>Transferir Roles</h2>
+    <p class="sub">Escolha pra quem transferir seus roles</p>
+    <div id="listaTransferir"></div>
+    <button class="btn btn-primary" onclick="confirmarTransferencia()">Transferir e Continuar</button>
+    <span class="link" onclick="fecharModalTransferir()" style="color:#94a3b8;">Cancelar</span>
   </div>
 </div>
 
@@ -343,587 +279,6 @@
 
 <div class="toast" id="toast"></div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-  import { initializeFirestore, doc, setDoc, getDoc, onSnapshot, collection, updateDoc, arrayUnion, arrayRemove }
-    from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
-  import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyAMlmIvyXaj_UoqaYgx9tfmRRtiDBQ_GcA",
-    authDomain: "rolesplit.firebaseapp.com",
-    projectId: "rolesplit",
-    storageBucket: "rolesplit.firebasestorage.app",
-    messagingSenderId: "983962572526",
-    appId: "1:983962572526:web:9f8f657de6af6df058c5ff",
-    measurementId: "G-YG80P2BZLR"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = initializeFirestore(app, { experimentalAutoDetectLongPolling: true });
-  const auth = getAuth(app);
-
-  const IMG_FALLBACK = 'img/default.jpg';
-
-  let usuarioAtual = localStorage.getItem('rolesplit_usuario') || '';
-  let todosOsRoles = [];
-  let roles = [];
-  let roleSelecionadoId = null;
-  let rolePainelAberto = null;
-
-  function imagemValida(url) {
-    if (!url || typeof url !== 'string' || url.trim() === '') return IMG_FALLBACK;
-    return url;
-  }
-
-  signInAnonymously(auth).then(() => {
-    document.getElementById('loadingOverlay').style.display = 'none';
-    if (!usuarioAtual) abrirModalNome(false);
-    atualizarPerfilUI();
-    escutarRolesFirebase();
-  }).catch(err => {
-    console.error("❌ ERRO AUTH:", err);
-    document.getElementById('loadingText').innerHTML =
-      '<b style="color:#ef4444;">❌ ERRO DE CONEXÃO</b><br><br>' +
-      '<span style="font-size:12px;">' + err.code + '</span><br><br>' +
-      '<span style="font-size:11px; color:#64748b;">' + err.message + '</span>';
-    document.getElementById('loadingOverlay').style.background = 'rgba(15, 23, 42, 0.98)';
-    const sp = document.getElementById('loadingSpinner');
-    if (sp) sp.style.display = 'none';
-  });
-
-  window.abrirModalNome = function(edicao) {
-    const modal = document.getElementById('modalNome');
-    if (edicao) {
-      document.getElementById('modalNomeTitulo').innerText = 'Trocar Nome';
-      document.getElementById('modalNomeDesc').innerText = 'Digite o novo nome:';
-      document.querySelector('#modalNome .btn-primary').innerHTML = 'Salvar ✏️';
-    } else {
-      document.getElementById('modalNomeTitulo').innerText = 'Bem-vindo!';
-      document.getElementById('modalNomeDesc').innerText = 'Como você quer ser chamado?';
-      document.querySelector('#modalNome .btn-primary').innerHTML = 'Começar 🚀';
-    }
-    document.getElementById('inputNomeUsuario').value = usuarioAtual || '';
-    modal.classList.add('ativo');
-    setTimeout(() => document.getElementById('inputNomeUsuario').focus(), 300);
-  };
-
-  window.salvarNome = function() {
-    const nome = document.getElementById('inputNomeUsuario').value.trim();
-    if (!nome || nome.length < 2) { toast('Digite um nome com pelo menos 2 letras', true); return; }
-    usuarioAtual = nome;
-    localStorage.setItem('rolesplit_usuario', usuarioAtual);
-    atualizarPerfilUI();
-    document.getElementById('modalNome').classList.remove('ativo');
-    toast('✅ Bem-vindo, ' + usuarioAtual + '!');
-  };
-
-  const inputNome = document.getElementById('inputNomeUsuario');
-  if (inputNome) inputNome.addEventListener('keypress', (e) => { if (e.key === 'Enter') salvarNome(); });
-
-  function escutarRolesFirebase() {
-    onSnapshot(collection(db, "roles"), (snapshot) => {
-      todosOsRoles = [];
-      snapshot.forEach(d => todosOsRoles.push({ id: d.id, ...d.data() }));
-      roles = todosOsRoles.filter(r => r.privado === false || r.privado === undefined);
-      renderizarEventos();
-      if (document.getElementById('tela-meus').classList.contains('ativa')) renderizarMeusRoles();
-      if (roleSelecionadoId) abrirModalDetalhes(roleSelecionadoId);
-      if (rolePainelAberto) renderizarPainel();
-    }, (err) => {
-      console.error("Erro ao escutar roles:", err);
-      toast('Erro: ' + err.message, true);
-    });
-  }
-
-  window.irAba = function(aba) {
-    document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('ativo'));
-    if (aba === 'home') { document.getElementById('tela-home').classList.add('ativa'); document.getElementById('navHome').classList.add('ativo'); }
-    else if (aba === 'criar') { document.getElementById('tela-criar').classList.add('ativa'); document.getElementById('navCriar').classList.add('ativo'); }
-    else if (aba === 'meus') { document.getElementById('tela-meus').classList.add('ativa'); document.getElementById('navMeus').classList.add('ativo'); renderizarMeusRoles(); }
-    else if (aba === 'perfil') { document.getElementById('tela-perfil').classList.add('ativa'); document.getElementById('navPerfil').classList.add('ativo'); atualizarStats(); }
-    else if (aba === 'painel') { document.getElementById('tela-painel').classList.add('ativa'); }
-    window.scrollTo(0, 0);
-  };
-
-  function renderizarEventos() {
-    const destaqueContainer = document.getElementById('destaqueContainer');
-    const gridEventos = document.getElementById('gridEventos');
-    if (roles.length === 0) {
-      destaqueContainer.innerHTML = '<div class="empty">Nenhum role público no momento.<br><br>Crie um novo ou entre com um código!</div>';
-      gridEventos.innerHTML = '';
-      return;
-    }
-    const principal = roles[0];
-    const parts = principal.participantes || [];
-    destaqueContainer.innerHTML = `
-      <div class="card-destaque" data-id="${principal.id}">
-        <div class="capa" style="background-image: url('${imagemValida(principal.imagem)}')">
-          <div class="badge-tipo">🎯 ${principal.codigo}</div>
-        </div>
-        <div class="conteudo">
-          <div class="titulo">${principal.nome}</div>
-          <div class="data">📅 ${formatarData(principal.data)}</div>
-          <div class="local">👥 ${parts.length}/${principal.vagas} participantes</div>
-        </div>
-      </div>
-    `;
-    gridEventos.innerHTML = roles.slice(1).map(r => `
-      <div class="card-mini" data-id="${r.id}">
-        <div class="capa" style="background-image: url('${imagemValida(r.imagem)}')"></div>
-        <div class="conteudo">
-          <div class="titulo">${r.nome}</div>
-          <div class="data">📅 ${formatarData(r.data)}</div>
-        </div>
-      </div>
-    `).join('');
-    document.querySelectorAll('.card-destaque, .card-mini').forEach(el => {
-      el.onclick = () => abrirModalDetalhes(el.dataset.id);
-    });
-  }
-
-  window.abrirModalDetalhes = function(id) {
-    roleSelecionadoId = id;
-    const r = todosOsRoles.find(x => x.id == id);
-    if (!r) return;
-    const parts = r.participantes || [];
-    const jaVai = parts.includes(usuarioAtual);
-    const ehAdmin = (r.admin === usuarioAtual);
-    const pct = Math.min(100, (parts.length / r.vagas) * 100);
-    document.getElementById('detalhesBanner').style.backgroundImage = `url('${imagemValida(r.imagem)}')`;
-    document.getElementById('detalhesTitulo').innerText = r.nome;
-    document.getElementById('detalhesAdmin').innerText = `Criado por ${r.admin}${ehAdmin ? ' (você 👑)' : ''}`;
-    document.getElementById('detalhesDataHora').innerText = formatarDataLong(r.data);
-    document.getElementById('detalhesLocal').innerText = r.local || 'Não informado';
-    document.getElementById('detalhesCidade').innerText = r.cidade || 'Não informada';
-    document.getElementById('detalhesCodigo').innerText = r.codigo;
-    document.getElementById('detalhesVagasTexto').innerText = `${parts.length} / ${r.vagas}`;
-    document.getElementById('detalhesBarraFill').style.width = pct + '%';
-    const av = document.getElementById('detalhesAvatares');
-    let htmlAv = parts.slice(0, 6).map(n => `<div class="avatar-item">${n[0].toUpperCase()}</div>`).join('');
-    if (parts.length > 6) htmlAv += `<div class="avatar-item" style="background:#10b981;">+${parts.length - 6}</div>`;
-    av.innerHTML = htmlAv || '<span style="font-size:12px; color:#64748b;">Nenhum participante.</span>';
-    const rodape = document.getElementById('detalhesRodapeBotao');
-    if (jaVai && ehAdmin) {
-      rodape.innerHTML = `
-        <div style="display:flex; gap:10px;">
-          <button class="btn btn-primary" style="flex:1;" onclick="acessarPainel('${r.id}')">👀 Ver Painel</button>
-          <button class="btn btn-danger" style="width:auto;" onclick="sairDoRole('${r.id}')">❌ Sair</button>
-        </div>
-      `;
-    } else if (jaVai && !ehAdmin) {
-      rodape.innerHTML = `<button class="btn btn-danger" onclick="sairDoRole('${r.id}')">❌ Sair do Role</button>`;
-    } else {
-      rodape.innerHTML = `<button class="btn btn-primary" onclick="entrarNoRole('${r.id}')">✋ Entrar no Role</button>`;
-    }
-    document.getElementById('modalDetalhes').classList.add('ativo');
-  };
-
-  window.fecharModalDetalhes = function() {
-    roleSelecionadoId = null;
-    document.getElementById('modalDetalhes').classList.remove('ativo');
-  };
-
-  window.entrarNoRole = async function(id) {
-    try {
-      await updateDoc(doc(db, "roles", id), { participantes: arrayUnion(usuarioAtual) });
-      toast('✅ Você entrou no role!');
-    } catch (e) { toast('Erro: ' + e.message, true); }
-  };
-
-  window.sairDoRole = async function(id) {
-    if (!confirm('Sair do role?')) return;
-    try {
-      await updateDoc(doc(db, "roles", id), { participantes: arrayRemove(usuarioAtual) });
-      toast('Você saiu do role.');
-      fecharModalDetalhes();
-    } catch (e) { toast('Erro: ' + e.message, true); }
-  };
-
-  window.acessarPainel = function(id) {
-    rolePainelAberto = id;
-    const r = todosOsRoles.find(x => x.id == id);
-    if (!r) return;
-    fecharModalDetalhes();
-    document.getElementById('roleTituloPainel').innerText = r.nome;
-    document.getElementById('roleSubtituloPainel').innerText = `📅 ${formatarData(r.data)}${r.local ? ' • 📍 ' + r.local : ''}${r.cidade ? ' • 🗺️ ' + r.cidade : ''}`;
-    document.getElementById('roleCodigoTopo').innerText = `CÓD: ${r.codigo}`;
-    document.getElementById('codigoPainelPessoas').innerText = r.codigo;
-    document.querySelectorAll('#tela-painel .aba').forEach((a, i) => { if (i === 0) a.classList.add('ativa'); else a.classList.remove('ativa'); });
-    document.getElementById('aba-painel-gastos').style.display = 'block';
-    document.getElementById('aba-painel-acerto').style.display = 'none';
-    document.getElementById('aba-painel-pessoas').style.display = 'none';
-    renderizarPainel();
-    irAba('painel');
-  };
-
-  window.trocarAbaPainel = function(aba, event) {
-    document.querySelectorAll('#tela-painel .aba').forEach(a => a.classList.remove('ativa'));
-    if (event) event.target.classList.add('ativa');
-    document.getElementById('aba-painel-gastos').style.display = aba === 'gastos' ? 'block' : 'none';
-    document.getElementById('aba-painel-acerto').style.display = aba === 'acerto' ? 'block' : 'none';
-    document.getElementById('aba-painel-pessoas').style.display = aba === 'pessoas' ? 'block' : 'none';
-  };
-
-  function renderizarPainel() {
-    const r = todosOsRoles.find(x => x.id == rolePainelAberto);
-    if (!r) return;
-    const gastos = r.gastos || [];
-    const parts = r.participantes || [];
-    const total = gastos.reduce((a, g) => a + Number(g.valor), 0);
-    const cota = parts.length > 0 ? total / parts.length : 0;
-    document.getElementById('totalGasto').innerText = formatarReal(total);
-    document.getElementById('totalPessoas').innerText = parts.length;
-    document.getElementById('cotaPessoa').innerText = formatarReal(cota);
-    document.getElementById('contadorPessoas').innerText = parts.length;
-    const lg = document.getElementById('listaGastos');
-    if (gastos.length === 0) lg.innerHTML = '<div class="empty">Nenhum gasto ainda.</div>';
-    else lg.innerHTML = gastos.map(g => `
-      <div class="item-gasto">
-        <div class="info">
-          <div class="desc">${g.descricao} <span style="font-size:10px; color:#94a3b8;">[${g.categoria}]</span></div>
-          <div class="quem">💳 ${g.pagador} • 👥 ${g.participantes.length} pessoa(s)</div>
-        </div>
-        <div style="display:flex; align-items:center; gap:8px;">
-          <span class="valor">${formatarReal(g.valor)}</span>
-          <button class="btn-del" onclick="removerGasto('${g.id}')">✕</button>
-        </div>
-      </div>
-    `).join('');
-    const saldos = calcularSaldos(r);
-    const ls = document.getElementById('listaSaldos');
-    if (gastos.length === 0) ls.innerHTML = '<div class="empty">Adicione gastos para ver os saldos.</div>';
-    else {
-      saldos.sort((a, b) => b.saldo - a.saldo);
-      ls.innerHTML = saldos.map(s => {
-        let c, t;
-        if (s.saldo > 0.01) { c = 'saldo-receber'; t = `✅ Recebe ${formatarReal(s.saldo)}`; }
-        else if (s.saldo < -0.01) { c = 'saldo-pagar'; t = `❌ Deve ${formatarReal(Math.abs(s.saldo))}`; }
-        else { c = 'saldo-ok'; t = '⚖️ Quite'; }
-        return `<div class="item-saldo ${c}"><span>${s.nome}</span><span>${t}</span></div>`;
-      }).join('');
-    }
-    const acertos = calcularAcertos(saldos);
-    const la = document.getElementById('listaAcertos');
-    if (acertos.length === 0) la.innerHTML = '<div class="empty">' + (gastos.length === 0 ? 'Adicione gastos.' : 'Ninguém deve nada! 🎉') + '</div>';
-    else la.innerHTML = acertos.map(a => `
-      <div class="item-acerto">
-        <div>
-          <div style="font-weight:800; color:#fff;">${a.de} → ${a.para}</div>
-          <div style="font-size:11px; color:#94a3b8;">Marcar como pago quando acertar</div>
-        </div>
-        <div style="text-align:right;">
-          <div style="font-weight:900; color:#3b82f6;">${formatarReal(a.valor)}</div>
-          <button class="btn btn-primary btn-sm" style="margin-top:4px;" onclick="marcarPago('${a.de}','${a.para}',${a.valor})">✅ Pago</button>
-        </div>
-      </div>
-    `).join('');
-    const lp = document.getElementById('listaParticipantesPainel');
-    lp.innerHTML = parts.map(p => `
-      <div class="item-saldo saldo-ok" style="justify-content:space-between;">
-        <span>${p} ${p === r.admin ? '👑' : ''}</span>
-        ${p !== r.admin ? `<button class="btn btn-danger btn-sm" onclick="removerParticipante('${p}')">✕</button>` : ''}
-      </div>
-    `).join('') || '<div class="empty">Sem participantes.</div>';
-  }
-
-  window.removerGasto = async function(gastoId) {
-    if (!confirm('Remover este gasto?')) return;
-    const r = todosOsRoles.find(x => x.id == rolePainelAberto);
-    const novosGastos = (r.gastos || []).filter(g => g.id != gastoId);
-    try { await updateDoc(doc(db, "roles", rolePainelAberto), { gastos: novosGastos }); toast('Gasto removido.'); }
-    catch (e) { toast('Erro: ' + e.message, true); }
-  };
-
-  window.marcarPago = async function(de, para, valor) {
-    const novoAcerto = { de, para, valor, data: Date.now() };
-    try {
-      await updateDoc(doc(db, "roles", rolePainelAberto), { acertosPagos: arrayUnion(novoAcerto) });
-      toast(`✅ ${de} pagou ${formatarReal(valor)} para ${para}`);
-    } catch (e) { toast('Erro: ' + e.message, true); }
-  };
-
-  window.adicionarParticipanteManual = async function() {
-    const nome = document.getElementById('novoParticipanteManual').value.trim();
-    if (!nome) return;
-    try {
-      await updateDoc(doc(db, "roles", rolePainelAberto), { participantes: arrayUnion(nome) });
-      document.getElementById('novoParticipanteManual').value = '';
-      toast('✅ Adicionado!');
-    } catch (e) { toast('Erro: ' + e.message, true); }
-  };
-
-  window.removerParticipante = async function(nome) {
-    if (!confirm(`Remover ${nome}?`)) return;
-    try {
-      await updateDoc(doc(db, "roles", rolePainelAberto), { participantes: arrayRemove(nome) });
-      toast('Removido.');
-    } catch (e) { toast('Erro: ' + e.message, true); }
-  };
-
-  window.abrirModalGasto = function() {
-    const r = todosOsRoles.find(x => x.id == rolePainelAberto);
-    if (!r) return;
-    document.getElementById('gastoPagador').innerHTML = (r.participantes || []).map(p => `<option value="${p}">${p}</option>`).join('');
-    const cc = document.getElementById('gastoCheckParticipantes');
-    cc.innerHTML = (r.participantes || []).map(p => `
-      <label class="check-item ativo">
-        <input type="checkbox" value="${p}" checked>
-        <span>${p}</span>
-      </label>
-    `).join('');
-    cc.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-      cb.addEventListener('change', e => {
-        const l = e.target.closest('.check-item');
-        if (e.target.checked) l.classList.add('ativo'); else l.classList.remove('ativo');
-      });
-    });
-    document.getElementById('gastoDescricao').value = '';
-    document.getElementById('gastoValor').value = '';
-    document.getElementById('modalGasto').classList.add('ativo');
-  };
-
-  window.fecharModalGasto = function() { document.getElementById('modalGasto').classList.remove('ativo'); };
-
-  window.marcarTodosGasto = function(m) {
-    document.querySelectorAll('#gastoCheckParticipantes input[type="checkbox"]').forEach(cb => {
-      cb.checked = m;
-      const l = cb.closest('.check-item');
-      if (m) l.classList.add('ativo'); else l.classList.remove('ativo');
-    });
-  };
-
-  window.salvarGasto = async function() {
-    const r = todosOsRoles.find(x => x.id == rolePainelAberto);
-    if (!r) return;
-    const descricao = document.getElementById('gastoDescricao').value.trim();
-    const valor = parseFloat(document.getElementById('gastoValor').value);
-    const categoria = document.getElementById('gastoCategoria').value;
-    const pagador = document.getElementById('gastoPagador').value;
-    const sel = [];
-    document.querySelectorAll('#gastoCheckParticipantes input[type="checkbox"]:checked').forEach(cb => sel.push(cb.value));
-    if (!descricao || !valor || valor <= 0) { toast('Preencha descrição e valor!', true); return; }
-    if (sel.length === 0) { toast('Selecione 1+ participante!', true); return; }
-    const novoGasto = { id: Date.now().toString(), descricao, valor, categoria, pagador, participantes: sel, criadoPor: usuarioAtual, data: Date.now() };
-    try {
-      await updateDoc(doc(db, "roles", rolePainelAberto), { gastos: arrayUnion(novoGasto) });
-      toast('✅ Gasto adicionado!');
-      fecharModalGasto();
-    } catch (e) { toast('Erro: ' + e.message, true); }
-  };
-
-  function calcularSaldos(r) {
-    const s = {};
-    (r.participantes || []).forEach(p => s[p] = { pago: 0, deve: 0 });
-    (r.gastos || []).forEach(g => {
-      if (s[g.pagador]) s[g.pagador].pago += Number(g.valor);
-      const vpp = Number(g.valor) / g.participantes.length;
-      g.participantes.forEach(p => { if (s[p]) s[p].deve += vpp; });
-    });
-    return Object.entries(s).map(([nome, d]) => ({ nome, pago: d.pago, deve: d.deve, saldo: d.pago - d.deve }));
-  }
-
-  function calcularAcertos(saldos) {
-    const c = saldos.filter(s => s.saldo > 0.01).map(s => ({ ...s })).sort((a, b) => b.saldo - a.saldo);
-    const d = saldos.filter(s => s.saldo < -0.01).map(s => ({ ...s, saldo: -s.saldo })).sort((a, b) => b.saldo - a.saldo);
-    const ac = [];
-    let i = 0, j = 0;
-    while (i < c.length && j < d.length) {
-      const cc = c[i], dd = d[j];
-      const v = Math.min(cc.saldo, dd.saldo);
-      if (v > 0.01) ac.push({ de: dd.nome, para: cc.nome, valor: v });
-      cc.saldo -= v; dd.saldo -= v;
-      if (cc.saldo < 0.01) i++;
-      if (dd.saldo < 0.01) j++;
-    }
-    return ac;
-  }
-
-  function renderizarMeusRoles() {
-    const meus = todosOsRoles.filter(r => (r.participantes || []).includes(usuarioAtual));
-    const c = document.getElementById('listaMeusRoles');
-    if (meus.length === 0) { c.innerHTML = '<div class="empty">Você ainda não participa de nenhum role.</div>'; return; }
-    c.innerHTML = meus.map(r => `
-      <div class="card" style="display:flex; gap:12px; align-items:center; cursor:pointer;" onclick="abrirModalDetalhes('${r.id}')">
-        <img src="${imagemValida(r.imagem)}" style="width:64px; height:64px; border-radius:12px; object-fit:cover;">
-        <div style="flex:1;">
-          <div style="font-weight:800; font-size:15px; color:#fff;">${r.nome} ${r.privado ? '🔒' : ''} ${r.admin === usuarioAtual ? '👑' : ''}</div>
-          <div style="font-size:12px; color:#93c5fd; margin-top:2px;">📅 ${formatarData(r.data)}</div>
-          <span style="font-size:10px; background:rgba(16,185,129,0.2); color:#10b981; font-weight:800; padding:2px 8px; border-radius:6px; margin-top:4px; display:inline-block;">Participando ✅</span>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  let ehPrivado = true;
-  window.togglePrivacidade = function() {
-    ehPrivado = !ehPrivado;
-    const t = document.getElementById('togglePrivado');
-    const d = document.getElementById('toggleDesc');
-    const titulo = t.querySelector('.titulo');
-    if (ehPrivado) { t.classList.add('ativo'); titulo.innerHTML = '🔒 Evento Privado'; d.innerText = 'Só quem tem o código pode entrar'; }
-    else { t.classList.remove('ativo'); titulo.innerHTML = '🌎 Evento Público'; d.innerText = 'Aparece para todos no app'; }
-  };
-
-  function atualizarPreview() {
-    const sel = document.getElementById('novoImagemSelect');
-    const preview = document.getElementById('previewImagem');
-    preview.style.backgroundImage = `url('${sel.value}')`;
-  }
-
-  document.getElementById('formCriarRole').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const codigo = gerarCodigo();
-    const imagem = document.getElementById('novoImagemSelect').value;
-    const novo = {
-      codigo,
-      nome: document.getElementById('novoTitulo').value,
-      data: new Date(document.getElementById('novoData').value).getTime(),
-      vagas: parseInt(document.getElementById('novoVagas').value),
-      imagem: imagem,
-      local: document.getElementById('novoLocal').value || '',
-      cidade: document.getElementById('novoCidade').value || '',
-      admin: usuarioAtual,
-      participantes: [usuarioAtual],
-      gastos: [],
-      acertosPagos: [],
-      privado: ehPrivado,
-      criadoEm: Date.now()
-    };
-    try {
-      await setDoc(doc(db, "roles", codigo), novo);
-      toast(`✅ Role criado! Código: ${codigo}`);
-      e.target.reset();
-      document.getElementById('novoVagas').value = '10';
-      ehPrivado = true;
-      document.getElementById('togglePrivado').classList.add('ativo');
-      document.querySelector('#togglePrivado .titulo').innerHTML = '🔒 Evento Privado';
-      document.getElementById('toggleDesc').innerText = 'Só quem tem o código pode entrar';
-      atualizarPreview();
-      irAba('home');
-    } catch (err) { toast('Erro: ' + err.message, true); }
-  });
-
-  window.entrarComCodigo = async function() {
-    const cod = document.getElementById('inputCodigoEntrar').value.trim().toUpperCase();
-    if (!cod) return;
-    try {
-      const snap = await getDoc(doc(db, "roles", cod));
-      if (snap.exists()) {
-        document.getElementById('inputCodigoEntrar').value = '';
-        const roleData = { id: snap.id, ...snap.data() };
-        if (!todosOsRoles.find(r => r.id === cod)) todosOsRoles.push(roleData);
-        abrirModalDetalhes(cod);
-      } else { toast('Role não encontrado com esse código!', true); }
-    } catch (e) { toast('Erro: ' + e.message, true); }
-  };
-
-  function atualizarPerfilUI() {
-    document.getElementById('nomePerfilDisplay').innerText = usuarioAtual || '...';
-    document.getElementById('avatarPerfil').innerText = (usuarioAtual || '?')[0].toUpperCase();
-  }
-
-  function atualizarStats() {
-    const meus = todosOsRoles.filter(r => (r.participantes || []).includes(usuarioAtual));
-    let total = 0;
-    meus.forEach(r => {
-      const s = calcularSaldos(r);
-      const meu = s.find(x => x.nome === usuarioAtual);
-      if (meu) total += meu.deve;
-    });
-    document.getElementById('statsPerfil').innerHTML = `
-      <div style="display:flex; justify-content:space-between; padding:8px 0;">
-        <span>🎉 Roles participando:</span><strong style="color:#10b981;">${meus.length}</strong>
-      </div>
-      <div style="display:flex; justify-content:space-between; padding:8px 0;">
-        <span>💰 Total gasto em roles:</span><strong style="color:#f59e0b;">${formatarReal(total)}</strong>
-      </div>
-    `;
-  }
-
-  function gerarLinkConvite() { return `${window.location.origin}${window.location.pathname}?join=${rolePainelAberto}`; }
-
-  function gerarMensagemConvite() {
-    const r = todosOsRoles.find(x => x.id == rolePainelAberto);
-    return `🍖 *${r.nome}*\n\nVocê foi convidado!\n\n🔑 Código: *${r.codigo}*\n🔗 Link: ${gerarLinkConvite()}\n\nEntre no app e use o código para participar.\n\n_RoleSplit_`;
-  }
-
-  window.compartilharWhatsApp = function() { window.open('https://wa.me/?text=' + encodeURIComponent(gerarMensagemConvite()), '_blank'); };
-  window.compartilharNativo = function() { if (navigator.share) navigator.share({ title: 'Convite RoleSplit', text: gerarMensagemConvite() }); else copiarLink(); };
-  window.copiarLink = function() {
-    const link = gerarLinkConvite();
-    navigator.clipboard.writeText(link).then(() => toast('✅ Link copiado!')).catch(() => {
-      const ta = document.createElement('textarea');
-      ta.value = link; document.body.appendChild(ta); ta.select();
-      document.execCommand('copy'); document.body.removeChild(ta);
-      toast('✅ Link copiado!');
-    });
-  };
-
-  window.copiarResumoWhatsApp = function() {
-    const r = todosOsRoles.find(x => x.id == rolePainelAberto);
-    const g = r.gastos || [];
-    const total = g.reduce((a, x) => a + Number(x.valor), 0);
-    const s = calcularSaldos(r);
-    const a = calcularAcertos(s);
-    let t = `🍖 *${r.nome}*\n━━━━━━━━━━━━━━\n\n💰 Total: ${formatarReal(total)}\n👥 Pessoas: ${r.participantes.length}\n\n📋 *GASTOS:*\n`;
-    g.forEach(x => { t += `• ${x.descricao} - ${formatarReal(x.valor)} (${x.pagador})\n`; });
-    t += `\n💸 *SALDOS:*\n`;
-    s.sort((a, b) => b.saldo - a.saldo).forEach(x => {
-      if (x.saldo > 0.01) t += `✅ ${x.nome}: Recebe ${formatarReal(x.saldo)}\n`;
-      else if (x.saldo < -0.01) t += `❌ ${x.nome}: Deve ${formatarReal(Math.abs(x.saldo))}\n`;
-      else t += `⚖️ ${x.nome}: Quite\n`;
-    });
-    if (a.length > 0) { t += `\n🤝 *ACERTOS:*\n`; a.forEach(x => { t += `• ${x.de} → ${x.para}: ${formatarReal(x.valor)}\n`; }); }
-    t += `\n_Gerado por RoleSplit 🍖_`;
-    navigator.clipboard.writeText(t).then(() => toast('✅ Resumo copiado!'));
-  };
-
-  function gerarCodigo() {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    let c = '';
-    for (let i = 0; i < 4; i++) c += chars[Math.floor(Math.random() * chars.length)];
-    return c;
-  }
-
-  function formatarReal(v) { return Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
-  function formatarData(ts) { if (!ts) return ''; return new Date(Number(ts)).toLocaleDateString('pt-BR'); }
-  function formatarDataLong(ts) { if (!ts) return ''; return new Date(Number(ts)).toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }); }
-
-  function toast(msg, erro = false) {
-    const t = document.getElementById('toast');
-    t.innerText = msg;
-    t.className = 'toast ativo' + (erro ? ' erro' : '');
-    setTimeout(() => t.classList.remove('ativo'), 2800);
-  }
-
-  function verificarConviteURL() {
-    const params = new URLSearchParams(window.location.search);
-    const join = params.get('join');
-    if (join) {
-      setTimeout(async () => {
-        const cod = join.toUpperCase();
-        try {
-          const snap = await getDoc(doc(db, "roles", cod));
-          if (snap.exists()) {
-            const roleData = { id: snap.id, ...snap.data() };
-            if (!todosOsRoles.find(r => r.id === cod)) todosOsRoles.push(roleData);
-            abrirModalDetalhes(cod);
-          } else { toast('Role não encontrado.', true); }
-        } catch (e) { toast('Erro ao abrir convite.', true); }
-        window.history.replaceState({}, '', window.location.pathname);
-      }, 1500);
-    }
-  }
-
-  setTimeout(() => {
-    atualizarPreview();
-    const sel = document.getElementById('novoImagemSelect');
-    if (sel) sel.addEventListener('change', atualizarPreview);
-  }, 3000);
-
-  setTimeout(verificarConviteURL, 2500);
-</script>
+<script type="module" src="app.js"></script>
 </body>
 </html>
