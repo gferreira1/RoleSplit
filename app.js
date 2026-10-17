@@ -388,7 +388,10 @@ window.abrirModalDetalhes = function(id) {
   document.getElementById('detalhesBarraFill').style.width = pct + '%';
 
   const av = document.getElementById('detalhesAvatares');
-  let htmlAv = parts.slice(0, 6).map(n => `<div class="avatar-item">${n[0].toUpperCase()}</div>`).join('');
+ let htmlAv = parts.slice(0, 6).map(n => {
+  const letra = (n && n.length > 0) ? n[0].toUpperCase() : '?';
+  return `<div class="avatar-item">${letra}</div>`;
+}).join('');
   if (parts.length > 6) htmlAv += `<div class="avatar-item" style="background:#10b981;">+${parts.length - 6}</div>`;
   av.innerHTML = htmlAv || '<span style="font-size:12px; color:#64748b;">Nenhum participante.</span>';
 
