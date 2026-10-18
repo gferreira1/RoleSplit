@@ -428,7 +428,7 @@ window.abrirModalDetalhes = function(id) {
 
   document.getElementById('detalhesBanner').style.backgroundImage = `url('${imagemValida(r.imagem)}')`;
   document.getElementById('detalhesTitulo').innerText = r.nome;
-  document.getElementById('detalhesAdmin').innerText = `Criado por ${r.admin || 'Desconhecido'}${ehAdmin ? ' (você 👑)' : ''}`;
+  document.getElementById('detalhesAdmin').innerText = `Por ${r.admin || 'Desconhecido'}${ehAdmin ? ' (você 👑)' : ''}`;
   document.getElementById('detalhesDataHora').innerText = formatarDataLong(r.data);
   document.getElementById('detalhesLocal').innerText = r.local || 'Não informado';
   document.getElementById('detalhesCidade').innerText = r.cidade || 'Não informada';
