@@ -419,29 +419,38 @@ function renderizarEventos() {
 // ============ MODAL DETALHES ============
 window.abrirModalDetalhes = function(id) {
   roleSelecionadoId = id;
-  const r = todosOsRoles.find(x => x.id == id);
+  
+  // Procura tanto nos roles quanto nos eventos da cidade
+  let r = todosOsRoles.find(x => x.id == id);
+  if (!r) {
+    r = roles.find(x => x.id == id); // <-- Correção para achar os eventos da prefeitura
+  }
   if (!r) return;
 
+  const isEvento = r.tipo === 'evento-cidade';
   const parts = r.participantes || [];
   const jaVai = ehParticipanteDoRole(r);
   const ehAdmin = ehAdminDoRole(r);
-  const pct = Math.min(100, (parts.length / r.vagas) * 100);
+  const vagas = r.vagas || 9999; // Eventos não têm vagas, usamos um número alto
+  const pct = Math.min(100, (parts.length / vagas) * 100);
 
   document.getElementById('detalhesBanner').style.backgroundImage = `url('${imagemValida(r.imagem)}')`;
   document.getElementById('detalhesTitulo').innerText = r.nome;
-  document.getElementById('detalhesAdmin').innerText = `Criado por ${r.admin}${ehAdmin ? ' (você 👑)' : ''}`;
+  document.getElementById('detalhesAdmin').innerText = `Criado por ${r.admin || 'Desconhecido'}${ehAdmin ? ' (você 👑)' : ''}`;
   document.getElementById('detalhesDataHora').innerText = formatarDataLong(r.data);
   document.getElementById('detalhesLocal').innerText = r.local || 'Não informado';
   document.getElementById('detalhesCidade').innerText = r.cidade || 'Não informada';
-  document.getElementById('detalhesCodigo').innerText = r.codigo;
-  document.getElementById('detalhesVagasTexto').innerText = `${parts.length} / ${r.vagas}`;
-  document.getElementById('detalhesBarraFill').style.width = pct + '%';
+  
+  // Se for evento, não tem código, então mostramos "Evento da Cidade"
+  document.getElementById('detalhesCodigo').innerText = isEvento ? 'EVENTO OFICIAL' : (r.codigo || '---');
+  document.getElementById('detalhesVagasTexto').innerText = isEvento ? 'Evento Aberto' : `${parts.length} / ${vagas}`;
+  document.getElementById('detalhesBarraFill').style.width = isEvento ? '100%' : pct + '%';
 
   const av = document.getElementById('detalhesAvatares');
- let htmlAv = parts.slice(0, 6).map(n => {
-  const letra = (n && n.length > 0) ? n[0].toUpperCase() : '?';
-  return `<div class="avatar-item">${letra}</div>`;
-}).join('');
+  let htmlAv = parts.slice(0, 6).map(n => {
+    const letra = (n && n.length > 0) ? n[0].toUpperCase() : '?';
+    return `<div class="avatar-item">${letra}</div>`;
+  }).join('');
   if (parts.length > 6) htmlAv += `<div class="avatar-item" style="background:#10b981;">+${parts.length - 6}</div>`;
   av.innerHTML = htmlAv || '<span style="font-size:12px; color:#64748b;">Nenhum participante.</span>';
 
@@ -451,7 +460,13 @@ window.abrirModalDetalhes = function(id) {
   const cota = parts.length > 0 ? total / parts.length : 0;
 
   let secaoCustos = '';
-  if (total > 0) {
+  if (isEvento) {
+    secaoCustos = `
+      <div style="background:#0f172a; padding:14px; border-radius:14px; margin-bottom:16px; text-align:center;">
+        <div style="font-size:13px; color:#64748b;">Este é um evento oficial da cidade e não possui controle de gastos.</div>
+      </div>
+    `;
+  } else if (total > 0) {
     secaoCustos += `
       <div style="background:#0f172a; padding:14px; border-radius:14px; margin-bottom:16px;">
         <h3 style="font-size:14px; color:#f1f5f9; margin-bottom:10px;">💰 Resumo de Custos</h3>
@@ -511,7 +526,11 @@ window.abrirModalDetalhes = function(id) {
 
   // ============ RODAPÉ ============
   const rodape = document.getElementById('detalhesRodapeBotao');
-  if (jaVai && ehAdmin) {
+  
+  if (isEvento) {
+    // Se for evento da prefeitura, apenas mostra um botão para fechar
+    rodape.innerHTML = `<button class="btn btn-secondary" onclick="fecharModalDetalhes()">Fechar</button>`;
+  } else if (jaVai && ehAdmin) {
     rodape.innerHTML = `
       <div style="display:flex; gap:10px;">
         <button class="btn btn-primary" style="flex:1;" onclick="acessarPainel('${r.id}')">👀 Ver Painel</button>
@@ -523,6 +542,7 @@ window.abrirModalDetalhes = function(id) {
   } else {
     rodape.innerHTML = `<button class="btn btn-primary" onclick="entrarNoRole('${r.id}')">✋ Entrar no Role</button>`;
   }
+  
   document.getElementById('modalDetalhes').classList.add('ativo');
 };
 
