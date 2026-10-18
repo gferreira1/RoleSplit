@@ -106,19 +106,47 @@ onAuthStateChanged(auth, (user) => {
 });
 
 function escutarRolesFirebase() {
-  onSnapshot(collection(db, "roles"), (snapshot) => {
+  // Escuta os ROLES (churrascos, etc)
+  onSnapshot(collection(db, "roles"), (snapshotRoles) => {
     todosOsRoles = [];
-    snapshot.forEach(d => todosOsRoles.push({ id: d.id, ...d.data() }));
-    roles = todosOsRoles.filter(r => r.privado === false || r.privado === undefined);
-    renderizarEventos();
-    if (document.getElementById('tela-meus').classList.contains('ativa')) renderizarMeusRoles();
-    if (roleSelecionadoId) abrirModalDetalhes(roleSelecionadoId);
-    if (rolePainelAberto) renderizarPainel();
+    snapshotRoles.forEach(d => todosOsRoles.push({ id: d.id, ...d.data() }));
+
+    const inicioHoje = new Date();
+    inicioHoje.setHours(0, 0, 0, 0);
+    const inicioHojeTimestamp = inicioHoje.getTime();
+
+    // Filtra os roles públicos e que ainda não passaram
+    const rolesPublicos = todosOsRoles.filter(r => {
+      const publico = (r.privado === false || r.privado === undefined);
+      if (!publico) return false;
+      if (!r.data) return true;
+      return Number(r.data) >= inicioHojeTimestamp;
+    });
+
+    // Escuta os EVENTOS DA CIDADE (que subimos no Firebase)
+    onSnapshot(collection(db, "eventosCidade"), (snapshotEventos) => {
+      const eventosCidade = [];
+      snapshotEventos.forEach(d => {
+        const ev = { id: d.id, ...d.data() };
+        if (!ev.data || Number(ev.data) >= inicioHojeTimestamp) {
+          eventosCidade.push(ev);
+        }
+      });
+
+      // Junta os roles e os eventos da prefeitura, e ordena pela data
+      roles = [...eventosCidade, ...rolesPublicos];
+      roles.sort((a, b) => Number(a.data) - Number(b.data));
+
+      // Atualiza a tela
+      renderizarEventos();
+      if (document.getElementById('tela-meus').classList.contains('ativa')) renderizarMeusRoles();
+      if (roleSelecionadoId) abrirModalDetalhes(roleSelecionadoId);
+      if (rolePainelAberto) renderizarPainel();
+    });
   }, (err) => {
     console.error("Erro ao escutar roles:", err);
   });
 }
-
 // ============ NAVEGAÇÃO ============
 window.irAba = function(aba) {
   document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
@@ -333,36 +361,58 @@ function atualizarStats() {
 function renderizarEventos() {
   const destaqueContainer = document.getElementById('destaqueContainer');
   const gridEventos = document.getElementById('gridEventos');
+  
   if (roles.length === 0) {
-    destaqueContainer.innerHTML = '<div class="empty">Nenhum role público no momento.<br><br>Crie um novo ou entre com um código!</div>';
+    destaqueContainer.innerHTML = '<div class="empty">Nenhum role ou evento no momento.<br><br>Crie um novo ou entre com um código!</div>';
     gridEventos.innerHTML = '';
     return;
   }
+
   const principal = roles[0];
-  const parts = principal.participantes || [];
+  const isEventoPrincipal = principal.tipo === 'evento-cidade';
+
+  // Destaque principal
   destaqueContainer.innerHTML = `
     <div class="card-destaque" data-id="${principal.id}">
       <div class="capa" style="background-image: url('${imagemValida(principal.imagem)}')">
-        <div class="badge-tipo">🎯 ${principal.codigo}</div>
+        <div class="badge-tipo">${isEventoPrincipal ? '🎪 Evento' : '🎯 ' + (principal.codigo || 'Role')}</div>
       </div>
       <div class="conteudo">
         <div class="titulo">${principal.nome}</div>
         <div class="data">📅 ${formatarData(principal.data)}</div>
-        <div class="local">👥 ${parts.length}/${principal.vagas} participantes</div>
+        <div class="local">${isEventoPrincipal ? '📍 ' + (principal.local || 'A definir') : '👥 ' + (principal.participantes || []).length + '/' + principal.vagas + ' participantes'}</div>
       </div>
     </div>
   `;
-  gridEventos.innerHTML = roles.slice(1).map(r => `
-    <div class="card-mini" data-id="${r.id}">
-      <div class="capa" style="background-image: url('${imagemValida(r.imagem)}')"></div>
-      <div class="conteudo">
-        <div class="titulo">${r.nome}</div>
-        <div class="data">📅 ${formatarData(r.data)}</div>
+
+  // Grid de eventos menores
+  gridEventos.innerHTML = roles.slice(1).map(r => {
+    const isEvento = r.tipo === 'evento-cidade';
+    return `
+      <div class="card-mini" data-id="${r.id}">
+        <div class="capa" style="background-image: url('${imagemValida(r.imagem)}')">
+          ${isEvento ? '<div style="position:absolute; top:8px; right:8px; background:#3b82f6; color:#fff; font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px;">🎪 EVENTO</div>' : ''}
+        </div>
+        <div class="conteudo">
+          <div class="titulo">${r.nome}</div>
+          <div class="data">📅 ${formatarData(r.data)}</div>
+        </div>
       </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
+
+  // Ação ao clicar (Eventos mostram aviso, Roles abrem modal)
   document.querySelectorAll('.card-destaque, .card-mini').forEach(el => {
-    el.onclick = () => abrirModalDetalhes(el.dataset.id);
+    el.onclick = () => {
+      const id = el.dataset.id;
+      const item = roles.find(x => x.id == id);
+      
+      if (item && item.tipo === 'evento-cidade') {
+        toast(`🎪 ${item.nome} - Local: ${item.local || 'A definir'}`, false);
+      } else {
+        abrirModalDetalhes(id);
+      }
+    };
   });
 }
 
@@ -713,6 +763,7 @@ function calcularAcertos(saldos) {
 }
 
 // ============ MEUS ROLES ============
+// ============ MEUS ROLES ============
 function renderizarMeusRoles() {
   const c = document.getElementById('listaMeusRoles');
   
@@ -721,11 +772,24 @@ function renderizarMeusRoles() {
     c.innerHTML = '<div class="empty">🔐 Faça login pra ver seus roles.</div>';
     return;
   }
-  
-  const meus = todosOsRoles.filter(r => ehParticipanteDoRole(r));
+
+  // ===== FILTRO DE DATA (mesma regra da home) =====
+  const inicioHoje = new Date();
+  inicioHoje.setHours(0, 0, 0, 0);
+  const inicioHojeTimestamp = inicioHoje.getTime();
+
+  const meus = todosOsRoles.filter(r => {
+    if (!ehParticipanteDoRole(r)) return false;
+    if (!r.data) return true; // fallback: sem data = mostra
+    return Number(r.data) >= inicioHojeTimestamp;
+  });
+
+  // Ordena do mais próximo pro mais distante
+  meus.sort((a, b) => Number(a.data) - Number(b.data));
+  // ===== FIM DO FILTRO =====
   
   if (meus.length === 0) {
-    c.innerHTML = '<div class="empty">Você ainda não participa de nenhum role.</div>';
+    c.innerHTML = '<div class="empty">Você ainda não participa de nenhum role futuro.<br><br>Os roles passados ficam no histórico.</div>';
     return;
   }
   
