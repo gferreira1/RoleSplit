@@ -23,6 +23,10 @@ let acaoPendentePosLogin = null;
 let senhaReauth = '';
 let excluirEmAndamento = false;
 
+// Variáveis de Filtro
+let termoBusca = '';
+let filtroLocalAtual = 'todos';
+
 // ============ HELPERS ============
 function imagemValida(url) {
   if (!url || typeof url !== 'string' || url.trim() === '') return IMG_FALLBACK;
@@ -48,6 +52,44 @@ function gerarCodigo() {
 }
 
 function normalizarEmail(e) { return (e || '').toLowerCase().trim(); }
+
+// ============ MENU LATERAL ============
+window.toggleMenu = function() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  if (sidebar && overlay) {
+    sidebar.classList.toggle('ativo');
+    overlay.classList.toggle('ativo');
+  }
+};
+
+function atualizarMenuLateral() {
+  const avatar = document.getElementById('menuAvatar');
+  const nome = document.getElementById('menuNome');
+  const email = document.getElementById('menuEmail');
+  const btnLogout = document.getElementById('btnMenuLogout');
+  const botoesVisitante = document.getElementById('menuBotoesVisitante');
+
+  if (!avatar || !nome || !email) return;
+
+  if (usuarioLogado) {
+    avatar.innerText = (usuarioAtual || '?')[0].toUpperCase();
+    avatar.style.background = '#3b82f6';
+    nome.innerText = usuarioAtual;
+    email.innerText = usuarioEmail;
+    
+    if (botoesVisitante) botoesVisitante.style.display = 'none';
+    if (btnLogout) btnLogout.style.display = 'block';
+  } else {
+    avatar.innerText = '?';
+    avatar.style.background = '#475569';
+    nome.innerText = 'Visitante';
+    email.innerText = 'Acesse para criar roles';
+    
+    if (botoesVisitante) botoesVisitante.style.display = 'flex';
+    if (btnLogout) btnLogout.style.display = 'none';
+  }
+}
 
 // ============ PERMISSÕES ============
 function ehAdminDoRole(r) {
@@ -78,6 +120,7 @@ onAuthStateChanged(auth, (user) => {
     }
     document.getElementById('loadingOverlay').style.display = 'none';
     atualizarPerfilUI();
+    atualizarMenuLateral();
     escutarRolesFirebase();
     if (acaoPendentePosLogin) {
       const acao = acaoPendentePosLogin;
@@ -88,11 +131,13 @@ onAuthStateChanged(auth, (user) => {
     document.getElementById('loadingOverlay').style.display = 'none';
     escutarRolesFirebase();
     atualizarPerfilUI();
+    atualizarMenuLateral();
   } else {
     signInAnonymously(auth).then(() => {
       usuarioLogado = false;
       document.getElementById('loadingOverlay').style.display = 'none';
       atualizarPerfilUI();
+      atualizarMenuLateral();
       escutarRolesFirebase();
     }).catch(err => {
       console.error("Erro auth:", err);
@@ -106,7 +151,6 @@ onAuthStateChanged(auth, (user) => {
 });
 
 function escutarRolesFirebase() {
-  // Escuta os ROLES (churrascos, etc)
   onSnapshot(collection(db, "roles"), (snapshotRoles) => {
     todosOsRoles = [];
     snapshotRoles.forEach(d => todosOsRoles.push({ id: d.id, ...d.data() }));
@@ -115,7 +159,6 @@ function escutarRolesFirebase() {
     inicioHoje.setHours(0, 0, 0, 0);
     const inicioHojeTimestamp = inicioHoje.getTime();
 
-    // Filtra os roles públicos e que ainda não passaram
     const rolesPublicos = todosOsRoles.filter(r => {
       const publico = (r.privado === false || r.privado === undefined);
       if (!publico) return false;
@@ -123,7 +166,6 @@ function escutarRolesFirebase() {
       return Number(r.data) >= inicioHojeTimestamp;
     });
 
-    // Escuta os EVENTOS DA CIDADE (que subimos no Firebase)
     onSnapshot(collection(db, "eventosCidade"), (snapshotEventos) => {
       const eventosCidade = [];
       snapshotEventos.forEach(d => {
@@ -133,12 +175,11 @@ function escutarRolesFirebase() {
         }
       });
 
-      // Junta os roles e os eventos da prefeitura, e ordena pela data
       roles = [...eventosCidade, ...rolesPublicos];
       roles.sort((a, b) => Number(a.data) - Number(b.data));
 
-      // Atualiza a tela
-      renderizarEventos();
+      aplicarFiltros(); // Chama a função de filtro
+
       if (document.getElementById('tela-meus').classList.contains('ativa')) renderizarMeusRoles();
       if (roleSelecionadoId) abrirModalDetalhes(roleSelecionadoId);
       if (rolePainelAberto) renderizarPainel();
@@ -147,6 +188,73 @@ function escutarRolesFirebase() {
     console.error("Erro ao escutar roles:", err);
   });
 }
+
+// ============ LÓGICA DE FILTROS E BUSCA ============
+window.abrirModalFiltros = function() {
+  const radios = document.getElementsByName('filtroLocal');
+  radios.forEach(r => { if (r.value === filtroLocalAtual) r.checked = true; });
+  const modal = document.getElementById('modalFiltros');
+  if (modal) modal.classList.add('ativo');
+};
+
+window.fecharModalFiltros = function() {
+  const modal = document.getElementById('modalFiltros');
+  if (modal) modal.classList.remove('ativo');
+};
+
+window.salvarFiltros = function() {
+  const radios = document.getElementsByName('filtroLocal');
+  for (let r of radios) {
+    if (r.checked) { filtroLocalAtual = r.value; break; }
+  }
+  fecharModalFiltros();
+  aplicarFiltros();
+};
+
+window.limparFiltros = function() {
+  const inputBusca = document.getElementById('inputBusca');
+  if (inputBusca) inputBusca.value = '';
+  termoBusca = '';
+  filtroLocalAtual = 'todos';
+  fecharModalFiltros();
+  aplicarFiltros();
+};
+
+window.aplicarFiltros = function() {
+  const inputBusca = document.getElementById('inputBusca');
+  termoBusca = inputBusca ? inputBusca.value.toLowerCase() : '';
+
+  if (!termoBusca && filtroLocalAtual === 'todos') {
+    renderizarEventos(roles);
+    return;
+  }
+
+  const filtrados = roles.filter(item => {
+    const isEvento = item.tipo === 'evento-cidade';
+    const nomeMatch = (item.nome || '').toLowerCase().includes(termoBusca);
+    
+    let localMatch = false;
+    if (filtroLocalAtual !== 'todos') {
+      if (!isEvento) return false; 
+      
+      const localDoEvento = (item.local || '').toLowerCase();
+      if (filtroLocalAtual === 'unisc' && localDoEvento.includes('unisc')) localMatch = true;
+      else if (filtroLocalAtual === 'oktoberfest' && localDoEvento.includes('oktoberfest')) localMatch = true;
+      else if (filtroLocalAtual === 'autodromo' && localDoEvento.includes('autódromo')) localMatch = true;
+      else if (filtroLocalAtual === 'lago' && localDoEvento.includes('lago')) localMatch = true;
+      else if (filtroLocalAtual === 'centro' && (localDoEvento.includes('praça') || localDoEvento.includes('centro'))) localMatch = true;
+      
+    } else {
+      localMatch = true;
+    }
+
+    return nomeMatch && localMatch;
+  });
+
+  filtrados.sort((a, b) => Number(a.data) - Number(b.data));
+  renderizarEventos(filtrados);
+};
+
 // ============ NAVEGAÇÃO ============
 window.irAba = function(aba) {
   document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
@@ -236,6 +344,7 @@ window.fazerCadastro = async function() {
     const f = document.getElementById('forcaSenha'); if (f) f.style.display = 'none';
     const rq = document.getElementById('senhaReq'); if (rq) rq.style.display = 'none';
     document.getElementById('modalCadastro').classList.remove('ativo');
+    atualizarMenuLateral();
     toast('✅ Conta criada! Bem-vindo, ' + nome + '!');
   } catch (err) {
     let msg = 'Erro ao criar conta.';
@@ -254,6 +363,7 @@ window.fazerLogout = async function() {
     usuarioAtual = '';
     usuarioEmail = '';
     usuarioLogado = false;
+    atualizarMenuLateral();
     toast('Você saiu.');
     setTimeout(() => location.reload(), 800);
   } catch (e) { toast('Erro: ' + e.message, true); }
@@ -333,6 +443,7 @@ window.abrirModalNome = function(edicao) {
     const user = auth.currentUser;
     if (user && !user.isAnonymous) updateProfile(user, { displayName: usuarioAtual }).catch(()=>{});
     atualizarPerfilUI();
+    atualizarMenuLateral();
     toast('✅ Nome atualizado!');
   }
 };
@@ -358,17 +469,17 @@ function atualizarStats() {
 }
 
 // ============ HOME ============
-function renderizarEventos() {
+function renderizarEventos(listaParaRenderizar = roles) {
   const destaqueContainer = document.getElementById('destaqueContainer');
   const gridEventos = document.getElementById('gridEventos');
   
-  if (roles.length === 0) {
-    destaqueContainer.innerHTML = '<div class="empty">Nenhum role ou evento no momento.<br><br>Crie um novo ou entre com um código!</div>';
+  if (listaParaRenderizar.length === 0) {
+    destaqueContainer.innerHTML = '<div class="empty">Nenhum evento ou role encontrado.</div>';
     gridEventos.innerHTML = '';
     return;
   }
 
-  const principal = roles[0];
+  const principal = listaParaRenderizar[0];
   const isEventoPrincipal = principal.tipo === 'evento-cidade';
 
   destaqueContainer.innerHTML = `
@@ -384,7 +495,7 @@ function renderizarEventos() {
     </div>
   `;
 
-  gridEventos.innerHTML = roles.slice(1).map(r => {
+  gridEventos.innerHTML = listaParaRenderizar.slice(1).map(r => {
     const isEvento = r.tipo === 'evento-cidade';
     return `
       <div class="card-mini" data-id="${r.id}">
@@ -399,12 +510,8 @@ function renderizarEventos() {
     `;
   }).join('');
 
-  // Ação ao clicar: AGORA TUDO ABRE O MODAL
   document.querySelectorAll('.card-destaque, .card-mini').forEach(el => {
-    el.onclick = () => {
-      const id = el.dataset.id;
-      abrirModalDetalhes(id); // <--- Abre o modal para Roles E Eventos!
-    };
+    el.onclick = () => { abrirModalDetalhes(el.dataset.id); };
   });
 }
 
@@ -412,18 +519,15 @@ function renderizarEventos() {
 window.abrirModalDetalhes = function(id) {
   roleSelecionadoId = id;
   
-  // Procura tanto nos roles quanto nos eventos da cidade
   let r = todosOsRoles.find(x => x.id == id);
-  if (!r) {
-    r = roles.find(x => x.id == id); // <-- Correção para achar os eventos da prefeitura
-  }
+  if (!r) r = roles.find(x => x.id == id);
   if (!r) return;
 
   const isEvento = r.tipo === 'evento-cidade';
   const parts = r.participantes || [];
   const jaVai = ehParticipanteDoRole(r);
   const ehAdmin = ehAdminDoRole(r);
-  const vagas = r.vagas || 9999; // Eventos não têm vagas, usamos um número alto
+  const vagas = r.vagas || 9999;
   const pct = Math.min(100, (parts.length / vagas) * 100);
 
   document.getElementById('detalhesBanner').style.backgroundImage = `url('${imagemValida(r.imagem)}')`;
@@ -433,7 +537,6 @@ window.abrirModalDetalhes = function(id) {
   document.getElementById('detalhesLocal').innerText = r.local || 'Não informado';
   document.getElementById('detalhesCidade').innerText = r.cidade || 'Não informada';
   
-  // Se for evento, não tem código, então mostramos "Evento da Cidade"
   document.getElementById('detalhesCodigo').innerText = isEvento ? 'EVENTO OFICIAL' : (r.codigo || '---');
   document.getElementById('detalhesVagasTexto').innerText = isEvento ? 'Evento Aberto' : `${parts.length} / ${vagas}`;
   document.getElementById('detalhesBarraFill').style.width = isEvento ? '100%' : pct + '%';
@@ -446,7 +549,6 @@ window.abrirModalDetalhes = function(id) {
   if (parts.length > 6) htmlAv += `<div class="avatar-item" style="background:#10b981;">+${parts.length - 6}</div>`;
   av.innerHTML = htmlAv || '<span style="font-size:12px; color:#64748b;">Nenhum participante.</span>';
 
-  // ============ SEÇÃO DE CUSTOS ============
   const gastos = r.gastos || [];
   const total = gastos.reduce((a, g) => a + Number(g.valor), 0);
   const cota = parts.length > 0 ? total / parts.length : 0;
@@ -516,11 +618,9 @@ window.abrirModalDetalhes = function(id) {
   if (cardParticipantes) bodyContent.insertBefore(divCustos, cardParticipantes);
   else bodyContent.appendChild(divCustos);
 
-  // ============ RODAPÉ ============
   const rodape = document.getElementById('detalhesRodapeBotao');
   
   if (isEvento) {
-    // Se for evento da prefeitura, apenas mostra um botão para fechar
     rodape.innerHTML = `<button class="btn btn-secondary" onclick="fecharModalDetalhes()">Fechar</button>`;
   } else if (jaVai && ehAdmin) {
     rodape.innerHTML = `
@@ -775,30 +875,25 @@ function calcularAcertos(saldos) {
 }
 
 // ============ MEUS ROLES ============
-// ============ MEUS ROLES ============
 function renderizarMeusRoles() {
   const c = document.getElementById('listaMeusRoles');
   
-  // BLOQUEIO: se não tá logado, não mostra nada
   if (!usuarioLogado) {
     c.innerHTML = '<div class="empty">🔐 Faça login pra ver seus roles.</div>';
     return;
   }
 
-  // ===== FILTRO DE DATA (mesma regra da home) =====
   const inicioHoje = new Date();
   inicioHoje.setHours(0, 0, 0, 0);
   const inicioHojeTimestamp = inicioHoje.getTime();
 
   const meus = todosOsRoles.filter(r => {
     if (!ehParticipanteDoRole(r)) return false;
-    if (!r.data) return true; // fallback: sem data = mostra
+    if (!r.data) return true;
     return Number(r.data) >= inicioHojeTimestamp;
   });
 
-  // Ordena do mais próximo pro mais distante
   meus.sort((a, b) => Number(a.data) - Number(b.data));
-  // ===== FIM DO FILTRO =====
   
   if (meus.length === 0) {
     c.innerHTML = '<div class="empty">Você ainda não participa de nenhum role futuro.<br><br>Os roles passados ficam no histórico.</div>';
@@ -816,6 +911,7 @@ function renderizarMeusRoles() {
     </div>
   `).join('');
 }
+
 // ============ CRIAR ROLE ============
 let ehPrivado = true;
 window.togglePrivacidade = function() {
@@ -1095,16 +1191,3 @@ setTimeout(() => {
 }, 3000);
 
 setTimeout(verificarConviteURL, 2500);
-
-//teste
-
-window.testeModal = function() {
-  console.log("Botão de teste clicado!");
-  // Vamos tentar abrir o modal do primeiro item da lista de roles/eventos
-  if (roles.length > 0) {
-    console.log("Tentando abrir o ID:", roles[0].id);
-    abrirModalDetalhes(roles[0].id);
-  } else {
-    alert("A lista de roles está vazia!");
-  }
-};

@@ -21,7 +21,8 @@ body {
 
 input, select, textarea { user-select: text; -webkit-user-select: text; }
 
-.container { max-width: 600px; margin: 0 auto; padding: 16px; }
+/* O container original teve o padding-top aumentado para o Header e Busca */
+.container { max-width: 600px; margin: 0 auto; padding: 16px; padding-top: 130px; }
 
 header { text-align: center; padding: 16px 0 12px; }
 header h1 {
@@ -538,7 +539,6 @@ input:focus, select:focus, textarea:focus { border-color: #10b981; }
 .card-vermelho { background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); }
 .card-vermelho h2 { color: #fca5a5; }
 
-
 /* ============ FORÇA DE SENHA ============ */
 .forca-senha {
   margin-top: 10px;
@@ -598,4 +598,245 @@ input:focus, select:focus, textarea:focus { border-color: #10b981; }
 }
 .senha-req .req.atendido .icone-req {
   color: #10b981;
+}
+
+/* ================= HEADER GLOBAL ================= */
+.app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  background: #0f172a;
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
+  align-items: center;
+  padding: 0 16px;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.menu-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 26px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0;
+}
+
+.header-logo {
+  font-size: 20px;
+  font-weight: 900;
+  color: #3b82f6;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  letter-spacing: -0.5px;
+}
+
+.header-spacer {
+  width: 40px;
+}
+
+/* ================= BARRA DE BUSCA ================= */
+.search-bar-container {
+  display: flex;
+  gap: 10px;
+  padding: 12px 16px;
+  background: #0f172a;
+  position: fixed;
+  top: 60px;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  z-index: 90;
+}
+
+.search-input-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: #1e293b;
+  border-radius: 12px;
+  padding: 0 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.search-input-wrapper input {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 12px 10px;
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+}
+
+.search-icon {
+  color: #94a3b8;
+  font-size: 16px;
+}
+
+.btn-filter {
+  background: #1e293b;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-filter:hover {
+  background: #3b82f6;
+}
+
+/* ================= MENU LATERAL (SIDEBAR) ================= */
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: rgba(0,0,0,0.6);
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  transition: 0.3s;
+}
+
+.sidebar-overlay.ativo {
+  opacity: 1;
+  visibility: visible;
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -300px;
+  width: 280px;
+  height: 100vh;
+  background: #1e293b;
+  z-index: 1000;
+  transition: 0.3s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 4px 0 15px rgba(0,0,0,0.5);
+}
+
+.sidebar.ativo {
+  left: 0;
+}
+
+.sidebar-header {
+  padding: 30px 20px 20px;
+  background: #0f172a;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  text-align: center;
+}
+
+.sidebar-header .perfil-avatar {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 10px;
+  background: #3b82f6;
+  color: white;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-weight: bold;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 20px 10px;
+  overflow-y: auto;
+}
+
+.sidebar-nav button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: none;
+  border: none;
+  color: #e2e8f0;
+  padding: 12px 15px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+  text-align: left;
+}
+
+.sidebar-nav button:hover {
+  background: rgba(59,130,246,0.15);
+  color: #3b82f6;
+}
+
+.sidebar-footer {
+  padding: 20px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  text-align: center;
+  font-size: 11px;
+  color: #64748b;
+}
+
+.sidebar-footer button {
+  width: 100%;
+  padding: 10px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-bottom: 10px;
+  color: #ef4444;
+}
+
+/* ================= LISTA DE LOCAIS (FILTRO) ================= */
+.lista-locais {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 250px;
+  overflow-y: auto;
+  padding-right: 5px;
+  margin-top: 16px;
+}
+
+.lista-locais .check-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,0.05);
+  padding: 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.1);
+  transition: 0.2s;
+  color: #e2e8f0;
+  font-size: 14px;
+}
+
+.lista-locais .check-item:hover {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: #3b82f6;
+}
+
+.lista-locais input[type="radio"] {
+  accent-color: #3b82f6;
+  transform: scale(1.2);
 }

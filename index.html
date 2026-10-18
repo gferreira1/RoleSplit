@@ -17,14 +17,73 @@
   <div class="loading-text" id="loadingText">Conectando...</div>
 </div>
 
+<!-- ================= HEADER GLOBAL ================= -->
+<header class="app-header">
+  <button class="menu-btn" onclick="toggleMenu()">☰</button>
+  <div class="header-logo">🍖 RoleSplit</div>
+  <div class="header-spacer"></div>
+</header>
+
+<!-- ================= MENU LATERAL (SIDEBAR) ================= -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMenu()"></div>
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="perfil-avatar" id="menuAvatar">?</div>
+    <h3 id="menuNome">Visitante</h3>
+    <p id="menuEmail" style="font-size: 12px; color: #94a3b8;">Faça login</p>
+    
+    <div id="menuBotoesVisitante" style="display: flex; gap: 8px; margin-top: 12px;">
+      <button class="btn btn-primary btn-sm" style="flex: 1;" onclick="pedirLogin(); toggleMenu();">🔐 Entrar</button>
+      <button class="btn btn-secondary btn-sm" style="flex: 1;" onclick="abrirCadastro(); toggleMenu();">✨ Criar Conta</button>
+    </div>
+  </div>
+  
+  <nav class="sidebar-nav">
+    <button onclick="irAba('home'); toggleMenu();">
+      <span class="icone">📅</span> Eventos e Roles
+    </button>
+    <button onclick="irAba('meus'); toggleMenu();">
+      <span class="icone">📋</span> Meus Roles
+    </button>
+    <button onclick="irAba('criar'); toggleMenu();">
+      <span class="icone">➕</span> Criar Novo Role
+    </button>
+    
+    <hr style="border-color: rgba(255,255,255,0.1); margin: 15px 0;">
+    
+    <button onclick="irAba('perfil'); toggleMenu();">
+      <span class="icone">⚙️</span> Meu Perfil
+    </button>
+  </nav>
+
+  <div class="sidebar-footer">
+    <button id="btnMenuLogout" onclick="fazerLogout(); toggleMenu();" style="display: none;">
+      🚪 Sair da Conta
+    </button>
+    <p>RoleSplit v1.0</p>
+  </div>
+</div>
+
+<!-- ================= BARRA DE BUSCA ================= -->
+<div class="search-bar-container">
+  <div class="search-input-wrapper">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="inputBusca" placeholder="Buscar evento..." oninput="aplicarFiltros()">
+  </div>
+  <button class="btn-filter" onclick="abrirModalFiltros()">
+    <span>📍</span> 
+  </button>
+</div>
+
+<!-- ================= CONTAINER PRINCIPAL ================= -->
 <div class="container">
+  <!-- TELA HOME -->
   <div class="tela ativa" id="tela-home">
-    <header><h1>🍖 RoleSplit</h1><p>Organize roles e divida as contas</p></header>
-    <h2 style="font-size:15px; color:#f1f5f9; margin-top:20px; margin-bottom:10px;">📋 Meus Roles</h2>
     <div id="destaqueContainer"></div>
     <div class="grid-eventos" id="gridEventos"></div>
   </div>
 
+  <!-- TELA CRIAR -->
   <div class="tela" id="tela-criar">
     <header><h1>➕ Criar Role</h1><p>Configure seu churrasco ou evento</p></header>
     <div class="card">
@@ -61,16 +120,19 @@
     </div>
   </div>
 
+  <!-- TELA MEUS ROLES -->
   <div class="tela" id="tela-meus">
     <header><h1>📋 Meus Roles</h1><p>Roles em que você participa</p></header>
     <div id="listaMeusRoles"></div>
   </div>
 
+  <!-- TELA PERFIL -->
   <div class="tela" id="tela-perfil">
     <header><h1>👤 Meu Perfil</h1></header>
     <div id="perfilConteudo"></div>
   </div>
 
+  <!-- TELA PAINEL -->
   <div class="tela" id="tela-painel">
     <div class="topbar">
       <button onclick="irAba('home')">← Voltar</button>
@@ -139,6 +201,47 @@
   </div>
 </div>
 
+<!-- ================= MODAL DE FILTROS ================= -->
+<div class="modal-overlay center" id="modalFiltros">
+  <div class="modal-auth" style="max-width: 400px;">
+    <button class="btn-fechar" onclick="fecharModalFiltros()">✕</button>
+    <div class="emoji" style="font-size: 40px; text-align: center;">📍</div>
+    <h2 style="text-align: center;">Onde vai ser?</h2>
+    <p class="sub" style="text-align: center;">Escolha o local para ver os eventos oficiais</p>
+    
+    <div class="lista-locais" id="listaFiltrosLocais">
+      <label class="check-item">
+        <input type="radio" name="filtroLocal" value="todos" checked>
+        <span>🗺️ Todos os locais</span>
+      </label>
+      <label class="check-item">
+        <input type="radio" name="filtroLocal" value="unisc">
+        <span>🎓 UNISC</span>
+      </label>
+      <label class="check-item">
+        <input type="radio" name="filtroLocal" value="oktoberfest">
+        <span>🍻 Parque da Oktoberfest</span>
+      </label>
+      <label class="check-item">
+        <input type="radio" name="filtroLocal" value="autodromo">
+        <span>🏎️ Autódromo</span>
+      </label>
+      <label class="check-item">
+        <input type="radio" name="filtroLocal" value="lago">
+        <span>🌊 Lago Dourado</span>
+      </label>
+      <label class="check-item">
+        <input type="radio" name="filtroLocal" value="centro">
+        <span>🏛️ Centro / Praça</span>
+      </label>
+    </div>
+
+    <button class="btn btn-primary" style="margin-top: 16px;" onclick="salvarFiltros()">Aplicar Filtro</button>
+    <button class="btn btn-secondary" onclick="limparFiltros()">Limpar Filtro</button>
+  </div>
+</div>
+
+<!-- ================= MODAIS EXISTENTES ================= -->
 <div class="modal-overlay" id="modalDetalhes">
   <div class="modal-sheet">
     <button class="btn-fechar" onclick="fecharModalDetalhes()">✕</button>
@@ -195,7 +298,6 @@
   </div>
 </div>
 
-<!-- MODAL LOGIN -->
 <div class="modal-overlay center" id="modalLogin">
   <div class="modal-auth">
     <div class="emoji">🔐</div>
@@ -209,7 +311,6 @@
   </div>
 </div>
 
-<!-- MODAL CADASTRO -->
 <div class="modal-overlay center" id="modalCadastro">
   <div class="modal-auth">
     <div class="emoji">✨</div>
@@ -240,7 +341,7 @@
     <span class="link" onclick="fecharModalAuth()" style="color:#94a3b8;">Agora não</span>
   </div>
 </div>
-<!-- MODAL EXCLUIR CONTA -->
+
 <div class="modal-overlay center" id="modalExcluir">
   <div class="modal-auth">
     <div class="emoji">⚠️</div>
@@ -258,7 +359,6 @@
   </div>
 </div>
 
-<!-- MODAL TRANSFERIR ROLES -->
 <div class="modal-overlay center" id="modalTransferir">
   <div class="modal-auth">
     <div class="emoji">🔄</div>
@@ -270,6 +370,7 @@
   </div>
 </div>
 
+<!-- BOTTOM NAV (Mantido) -->
 <div class="bottom-nav">
   <button class="nav-item ativo" id="navHome" onclick="irAba('home')"><span class="icone">📅</span><span>Eventos</span></button>
   <button class="nav-item" id="navCriar" onclick="irAba('criar')"><span class="icone">➕</span><span>Criar</span></button>
