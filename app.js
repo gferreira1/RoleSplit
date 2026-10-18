@@ -325,11 +325,16 @@ window.trocarModalAuth = function(qual) {
 };
 
 window.fecharModalAuth = function() {
+  // 1. Fecha os modais
   document.getElementById('modalLogin').classList.remove('ativo');
   document.getElementById('modalCadastro').classList.remove('ativo');
+  
+  // 2. Limpa a ação pendente (para não tentar fazer nada depois)
   acaoPendentePosLogin = null;
+  
+  // 3. FORÇA o retorno para a Home
+  irAba('home');
 };
-
 window.fazerLogin = async function() {
   const email = document.getElementById('loginEmail').value.trim();
   const senha = document.getElementById('loginSenha').value;
