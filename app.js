@@ -23,8 +23,9 @@ let acaoPendentePosLogin = null;
 let senhaReauth = '';
 let excluirEmAndamento = false;
 
-// Variáveis de Filtro
+// Variáveis de Filtro (Declaradas APENAS UMA VEZ aqui)
 let termoBusca = '';
+let filtroCidadeAtual = 'todas';
 let filtroLocalAtual = 'todos';
 
 // ============ HELPERS ============
@@ -189,24 +190,62 @@ function escutarRolesFirebase() {
   });
 }
 
-// ============ LÓGICA DE FILTROS E BUSCA ============
+// ============ LÓGICA DE FILTROS E BUSCA (DINÂMICA) ============
 window.abrirModalFiltros = function() {
-  const radios = document.getElementsByName('filtroLocal');
-  radios.forEach(r => { if (r.value === filtroLocalAtual) r.checked = true; });
-  const modal = document.getElementById('modalFiltros');
-  if (modal) modal.classList.add('ativo');
+  const selectCidade = document.getElementById('filtroCidadeSelect');
+  
+  // Extrai cidades únicas do Firebase
+  const cidadesSet = new Set();
+  roles.forEach(r => {
+    let cid = r.cidade;
+    if (!cid && r.tipo !== 'evento-cidade') cid = 'Santa Cruz do Sul'; 
+    if (cid) {
+      cid = cid.trim().charAt(0).toUpperCase() + cid.trim().slice(1);
+      cidadesSet.add(cid);
+    }
+  });
+
+  let opcoesHTML = `<option value="todas">Todas as cidades</option>`;
+  Array.from(cidadesSet).sort().forEach(cidade => {
+    opcoesHTML += `<option value="${cidade.toLowerCase()}">${cidade}</option>`;
+  });
+  selectCidade.innerHTML = opcoesHTML;
+  selectCidade.value = filtroCidadeAtual;
+
+  atualizarLocaisPorCidade(); // Chama a função que preenche o select de locais
+  document.getElementById('modalFiltros').classList.add('ativo');
+};
+
+window.atualizarLocaisPorCidade = function() {
+  const cidadeSelecionada = document.getElementById('filtroCidadeSelect').value;
+  const selectLocal = document.getElementById('filtroLocalSelect');
+  
+  const locaisSet = new Set();
+  roles.forEach(item => {
+    const cidadeItem = (item.cidade || (item.tipo !== 'evento-cidade' ? 'santa cruz do sul' : '')).toLowerCase();
+    if (cidadeSelecionada === 'todas' || cidadeItem.includes(cidadeSelecionada)) {
+      if (item.tipo === 'evento-cidade' && item.local) {
+        locaisSet.add(item.local.trim());
+      }
+    }
+  });
+
+  let opcoesHTML = `<option value="todos">🗺️ Todos os locais</option>`;
+  Array.from(locaisSet).sort().forEach(local => {
+    opcoesHTML += `<option value="${local.toLowerCase()}">📍 ${local}</option>`;
+  });
+  
+  selectLocal.innerHTML = opcoesHTML;
+  selectLocal.value = filtroLocalAtual; // Mantém o que estava selecionado se ainda existir
 };
 
 window.fecharModalFiltros = function() {
-  const modal = document.getElementById('modalFiltros');
-  if (modal) modal.classList.remove('ativo');
+  document.getElementById('modalFiltros').classList.remove('ativo');
 };
 
 window.salvarFiltros = function() {
-  const radios = document.getElementsByName('filtroLocal');
-  for (let r of radios) {
-    if (r.checked) { filtroLocalAtual = r.value; break; }
-  }
+  filtroCidadeAtual = document.getElementById('filtroCidadeSelect').value;
+  filtroLocalAtual = document.getElementById('filtroLocalSelect').value; // Pega do select
   fecharModalFiltros();
   aplicarFiltros();
 };
@@ -215,6 +254,7 @@ window.limparFiltros = function() {
   const inputBusca = document.getElementById('inputBusca');
   if (inputBusca) inputBusca.value = '';
   termoBusca = '';
+  filtroCidadeAtual = 'todas';
   filtroLocalAtual = 'todos';
   fecharModalFiltros();
   aplicarFiltros();
@@ -224,7 +264,7 @@ window.aplicarFiltros = function() {
   const inputBusca = document.getElementById('inputBusca');
   termoBusca = inputBusca ? inputBusca.value.toLowerCase() : '';
 
-  if (!termoBusca && filtroLocalAtual === 'todos') {
+  if (!termoBusca && filtroCidadeAtual === 'todas' && filtroLocalAtual === 'todos') {
     renderizarEventos(roles);
     return;
   }
@@ -233,22 +273,22 @@ window.aplicarFiltros = function() {
     const isEvento = item.tipo === 'evento-cidade';
     const nomeMatch = (item.nome || '').toLowerCase().includes(termoBusca);
     
-    let localMatch = false;
-    if (filtroLocalAtual !== 'todos') {
-      if (!isEvento) return false; 
-      
-      const localDoEvento = (item.local || '').toLowerCase();
-      if (filtroLocalAtual === 'unisc' && localDoEvento.includes('unisc')) localMatch = true;
-      else if (filtroLocalAtual === 'oktoberfest' && localDoEvento.includes('oktoberfest')) localMatch = true;
-      else if (filtroLocalAtual === 'autodromo' && localDoEvento.includes('autódromo')) localMatch = true;
-      else if (filtroLocalAtual === 'lago' && localDoEvento.includes('lago')) localMatch = true;
-      else if (filtroLocalAtual === 'centro' && (localDoEvento.includes('praça') || localDoEvento.includes('centro'))) localMatch = true;
-      
-    } else {
-      localMatch = true;
+    // Filtro de Cidade
+    let cidadeMatch = true;
+    if (filtroCidadeAtual !== 'todas') {
+      const cidadeDoItem = (item.cidade || (isEvento ? '' : 'santa cruz do sul')).toLowerCase();
+      cidadeMatch = cidadeDoItem.includes(filtroCidadeAtual);
     }
 
-    return nomeMatch && localMatch;
+    // Filtro de Local
+    let localMatch = true;
+    if (filtroLocalAtual !== 'todos') {
+      if (!isEvento) return false; // Roles não têm local fixo
+      const localDoEvento = (item.local || '').toLowerCase();
+      localMatch = localDoEvento.includes(filtroLocalAtual);
+    }
+
+    return nomeMatch && cidadeMatch && localMatch;
   });
 
   filtrados.sort((a, b) => Number(a.data) - Number(b.data));

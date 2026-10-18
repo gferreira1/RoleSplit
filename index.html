@@ -200,40 +200,26 @@
     </div>
   </div>
 </div>
-
 <!-- ================= MODAL DE FILTROS ================= -->
 <div class="modal-overlay center" id="modalFiltros">
   <div class="modal-auth" style="max-width: 400px;">
     <button class="btn-fechar" onclick="fecharModalFiltros()">✕</button>
     <div class="emoji" style="font-size: 40px; text-align: center;">📍</div>
     <h2 style="text-align: center;">Onde vai ser?</h2>
-    <p class="sub" style="text-align: center;">Escolha o local para ver os eventos oficiais</p>
+    <p class="sub" style="text-align: center;">Filtre os eventos do Firebase</p>
     
-    <div class="lista-locais" id="listaFiltrosLocais">
-      <label class="check-item">
-        <input type="radio" name="filtroLocal" value="todos" checked>
-        <span>🗺️ Todos os locais</span>
-      </label>
-      <label class="check-item">
-        <input type="radio" name="filtroLocal" value="unisc">
-        <span>🎓 UNISC</span>
-      </label>
-      <label class="check-item">
-        <input type="radio" name="filtroLocal" value="oktoberfest">
-        <span>🍻 Parque da Oktoberfest</span>
-      </label>
-      <label class="check-item">
-        <input type="radio" name="filtroLocal" value="autodromo">
-        <span>🏎️ Autódromo</span>
-      </label>
-      <label class="check-item">
-        <input type="radio" name="filtroLocal" value="lago">
-        <span>🌊 Lago Dourado</span>
-      </label>
-      <label class="check-item">
-        <input type="radio" name="filtroLocal" value="centro">
-        <span>🏛️ Centro / Praça</span>
-      </label>
+    <div class="input-group" style="margin-top: 16px;">
+      <label>Cidade</label>
+      <select id="filtroCidadeSelect" onchange="atualizarLocaisPorCidade()">
+        <option value="todas">Carregando...</option>
+      </select>
+    </div>
+
+    <div class="input-group">
+      <label>Local</label>
+      <select id="filtroLocalSelect">
+        <option value="todos">🗺️ Todos os locais</option>
+      </select>
     </div>
 
     <button class="btn btn-primary" style="margin-top: 16px;" onclick="salvarFiltros()">Aplicar Filtro</button>
