@@ -371,7 +371,6 @@ function renderizarEventos() {
   const principal = roles[0];
   const isEventoPrincipal = principal.tipo === 'evento-cidade';
 
-  // Destaque principal
   destaqueContainer.innerHTML = `
     <div class="card-destaque" data-id="${principal.id}">
       <div class="capa" style="background-image: url('${imagemValida(principal.imagem)}')">
@@ -385,7 +384,6 @@ function renderizarEventos() {
     </div>
   `;
 
-  // Grid de eventos menores
   gridEventos.innerHTML = roles.slice(1).map(r => {
     const isEvento = r.tipo === 'evento-cidade';
     return `
@@ -401,17 +399,11 @@ function renderizarEventos() {
     `;
   }).join('');
 
-  // Ação ao clicar (Eventos mostram aviso, Roles abrem modal)
+  // Ação ao clicar: AGORA TUDO ABRE O MODAL
   document.querySelectorAll('.card-destaque, .card-mini').forEach(el => {
     el.onclick = () => {
       const id = el.dataset.id;
-      const item = roles.find(x => x.id == id);
-      
-      if (item && item.tipo === 'evento-cidade') {
-        toast(`🎪 ${item.nome} - Local: ${item.local || 'A definir'}`, false);
-      } else {
-        abrirModalDetalhes(id);
-      }
+      abrirModalDetalhes(id); // <--- Abre o modal para Roles E Eventos!
     };
   });
 }
@@ -1103,3 +1095,16 @@ setTimeout(() => {
 }, 3000);
 
 setTimeout(verificarConviteURL, 2500);
+
+//teste
+
+window.testeModal = function() {
+  console.log("Botão de teste clicado!");
+  // Vamos tentar abrir o modal do primeiro item da lista de roles/eventos
+  if (roles.length > 0) {
+    console.log("Tentando abrir o ID:", roles[0].id);
+    abrirModalDetalhes(roles[0].id);
+  } else {
+    alert("A lista de roles está vazia!");
+  }
+};
