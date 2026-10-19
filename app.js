@@ -194,40 +194,57 @@ function escutarRolesFirebase() {
 window.abrirModalFiltros = function() {
   const selectCidade = document.getElementById('filtroCidadeSelect');
   
-  // Extrai cidades únicas do Firebase (padronizando os nomes)
-  const cidadesSet = new Set();
-  roles.forEach(r => {
-    let cid = r.cidade;
-    // Se for role e não tiver cidade, assume Santa Cruz
-    if (!cid && r.tipo !== 'evento-cidade') cid = 'Santa Cruz do Sul'; 
-    
-    if (cid) {
-      // Limpa o nome: tira o " - RS", tira espaços extras e deixa a primeira letra maiúscula
-      let nomeLimpo = cid.replace(/- RS/gi, '').trim();
-      nomeLimpo = nomeLimpo.charAt(0).toUpperCase() + nomeLimpo.slice(1).toLowerCase();
-      
-      // Se a cidade for Santa Cruz, força para "Santa Cruz do Sul" para não criar duplicatas
-      if (nomeLimpo.toLowerCase().includes('santa cruz')) {
-        nomeLimpo = 'Santa Cruz do Sul';
-      }
-      
-      cidadesSet.add(nomeLimpo);
-    }
-  });
+  // Limpa o select antes de preencher
+  selectCidade.innerHTML = '';
 
+  // Extrai cidades únicas do Firebase (da variável global 'roles')
+  const cidadesSet = new Set();
+  
+  // Se a lista global 'roles' estiver vazia, tenta usar 'todosOsRoles'
+  const listaBase = (typeof roles !== 'undefined' && roles.length > 0) ? roles : todosOsRoles;
+
+  if (listaBase && listaBase.length > 0) {
+    listaBase.forEach(r => {
+      let cid = r.cidade;
+      
+      // Se for role de amigo e não tiver cidade, define Santa Cruz como padrão
+      if (!cid && r.tipo !== 'evento-cidade') cid = 'Santa Cruz do Sul'; 
+      
+      if (cid) {
+        // Limpa o nome: tira o " - RS", tira espaços extras e deixa a primeira letra maiúscula
+        let nomeLimpo = cid.replace(/- RS/gi, '').trim();
+        nomeLimpo = nomeLimpo.charAt(0).toUpperCase() + nomeLimpo.slice(1).toLowerCase();
+        
+        // Padroniza Santa Cruz para não duplicar
+        if (nomeLimpo.toLowerCase().includes('santa cruz')) {
+          nomeLimpo = 'Santa Cruz do Sul';
+        }
+        
+        cidadesSet.add(nomeLimpo);
+      }
+    });
+  }
+
+  // Monta as opções no select
   let opcoesHTML = `<option value="todas">Todas as cidades</option>`;
-  Array.from(cidadesSet).sort().forEach(cidade => {
-    // O valor do option fica minúsculo para facilitar a busca
-    opcoesHTML += `<option value="${cidade.toLowerCase()}">${cidade} - RS</option>`;
-  });
+  
+  if (cidadesSet.size === 0) {
+    opcoesHTML = `<option value="todas">Nenhum evento encontrado</option>`;
+  } else {
+    Array.from(cidadesSet).sort().forEach(cidade => {
+      opcoesHTML += `<option value="${cidade.toLowerCase()}">${cidade} - RS</option>`;
+    });
+  }
   
   selectCidade.innerHTML = opcoesHTML;
   selectCidade.value = filtroCidadeAtual;
 
+  // Chama a função que preenche o select de locais baseado na cidade selecionada
   atualizarLocaisPorCidade(); 
+  
+  // Abre o modal
   document.getElementById('modalFiltros').classList.add('ativo');
 };
-
 window.atualizarLocaisPorCidade = function() {
   const cidadeSelecionada = document.getElementById('filtroCidadeSelect').value;
   const selectLocal = document.getElementById('filtroLocalSelect');
