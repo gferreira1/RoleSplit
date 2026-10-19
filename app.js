@@ -194,25 +194,37 @@ function escutarRolesFirebase() {
 window.abrirModalFiltros = function() {
   const selectCidade = document.getElementById('filtroCidadeSelect');
   
-  // Extrai cidades únicas do Firebase
+  // Extrai cidades únicas do Firebase (padronizando os nomes)
   const cidadesSet = new Set();
   roles.forEach(r => {
     let cid = r.cidade;
+    // Se for role e não tiver cidade, assume Santa Cruz
     if (!cid && r.tipo !== 'evento-cidade') cid = 'Santa Cruz do Sul'; 
+    
     if (cid) {
-      cid = cid.trim().charAt(0).toUpperCase() + cid.trim().slice(1);
-      cidadesSet.add(cid);
+      // Limpa o nome: tira o " - RS", tira espaços extras e deixa a primeira letra maiúscula
+      let nomeLimpo = cid.replace(/- RS/gi, '').trim();
+      nomeLimpo = nomeLimpo.charAt(0).toUpperCase() + nomeLimpo.slice(1).toLowerCase();
+      
+      // Se a cidade for Santa Cruz, força para "Santa Cruz do Sul" para não criar duplicatas
+      if (nomeLimpo.toLowerCase().includes('santa cruz')) {
+        nomeLimpo = 'Santa Cruz do Sul';
+      }
+      
+      cidadesSet.add(nomeLimpo);
     }
   });
 
   let opcoesHTML = `<option value="todas">Todas as cidades</option>`;
   Array.from(cidadesSet).sort().forEach(cidade => {
-    opcoesHTML += `<option value="${cidade.toLowerCase()}">${cidade}</option>`;
+    // O valor do option fica minúsculo para facilitar a busca
+    opcoesHTML += `<option value="${cidade.toLowerCase()}">${cidade} - RS</option>`;
   });
+  
   selectCidade.innerHTML = opcoesHTML;
   selectCidade.value = filtroCidadeAtual;
 
-  atualizarLocaisPorCidade(); // Chama a função que preenche o select de locais
+  atualizarLocaisPorCidade(); 
   document.getElementById('modalFiltros').classList.add('ativo');
 };
 
