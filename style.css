@@ -21,12 +21,11 @@ body {
 
 input, select, textarea { user-select: text; -webkit-user-select: text; }
 
-/* O container com padding-top para o Header fixo */
 .container { 
   max-width: 600px; 
   margin: 0 auto; 
   padding: 16px; 
-  padding-top: 80px; /* Apenas o Header Global agora */
+  padding-top: 80px;
 }
 
 header { text-align: center; padding: 16px 0 12px; }
@@ -226,6 +225,7 @@ input:focus, select:focus, textarea:focus { border-color: #10b981; }
   border: 1px solid rgba(51, 65, 85, 0.6);
   max-height: 92vh;
   overflow-y: auto;
+  position: relative;
 }
 @keyframes popIn {
   from { transform: scale(0.85); opacity: 0; }
@@ -316,8 +316,9 @@ input:focus, select:focus, textarea:focus { border-color: #10b981; }
   transition: color 0.15s, transform 0.1s;
 }
 .nav-item:active { transform: scale(0.92); }
-.nav-item .icone { font-size: 22px; line-height: 1; }
+.nav-item .icone-svg { width: 24px; height: 24px; stroke: #94a3b8; transition: stroke 0.2s; }
 .nav-item.ativo { color: #10b981; }
+.nav-item.ativo .icone-svg { stroke: #10b981; }
 
 .tela { display: none; }
 .tela.ativa { display: block; }
@@ -582,13 +583,12 @@ input:focus, select:focus, textarea:focus { border-color: #10b981; }
 .header-logo { font-size: 20px; font-weight: 900; color: #3b82f6; text-align: center; display: flex; justify-content: center; align-items: center; letter-spacing: -0.5px; }
 .header-spacer { width: 40px; }
 
-/* ================= BARRA DE BUSCA (CORRIGIDA) ================= */
+/* ================= BARRA DE BUSCA ================= */
 .search-bar-container {
   display: flex;
   gap: 10px;
-  padding: 10px 0 20px 0; /* Margem em cima e embaixo */
+  padding: 10px 0 20px 0;
   width: 100%;
-  /* REMOVIDO: position: fixed, top: 60px, max-width, margin: 0 auto, z-index */
 }
 
 .search-input-wrapper {
@@ -625,7 +625,6 @@ input:focus, select:focus, textarea:focus { border-color: #10b981; }
   cursor: pointer;
   transition: 0.2s;
 }
-
 .btn-filter:hover { background: #3b82f6; }
 
 /* ================= MENU LATERAL (SIDEBAR) ================= */
@@ -641,7 +640,6 @@ input:focus, select:focus, textarea:focus { border-color: #10b981; }
   visibility: hidden;
   transition: 0.3s;
 }
-
 .sidebar-overlay.ativo { opacity: 1; visibility: visible; }
 
 .sidebar {
@@ -657,7 +655,6 @@ input:focus, select:focus, textarea:focus { border-color: #10b981; }
   flex-direction: column;
   box-shadow: 4px 0 15px rgba(0,0,0,0.5);
 }
-
 .sidebar.ativo { left: 0; }
 
 .sidebar-header {
@@ -666,7 +663,6 @@ input:focus, select:focus, textarea:focus { border-color: #10b981; }
   border-bottom: 1px solid rgba(255,255,255,0.05);
   text-align: center;
 }
-
 .sidebar-header .perfil-avatar {
   width: 60px;
   height: 60px;
@@ -682,7 +678,6 @@ input:focus, select:focus, textarea:focus { border-color: #10b981; }
 }
 
 .sidebar-nav { flex: 1; padding: 20px 10px; overflow-y: auto; }
-
 .sidebar-nav button {
   width: 100%;
   display: flex;
@@ -699,7 +694,6 @@ input:focus, select:focus, textarea:focus { border-color: #10b981; }
   transition: 0.2s;
   text-align: left;
 }
-
 .sidebar-nav button:hover { background: rgba(59,130,246,0.15); color: #3b82f6; }
 
 .sidebar-footer {
@@ -709,7 +703,6 @@ input:focus, select:focus, textarea:focus { border-color: #10b981; }
   font-size: 11px;
   color: #64748b;
 }
-
 .sidebar-footer button {
   width: 100%;
   padding: 10px;
@@ -722,37 +715,41 @@ input:focus, select:focus, textarea:focus { border-color: #10b981; }
   color: #ef4444;
 }
 
-/* ================= LISTA DE LOCAIS (FILTRO) ================= */
-.lista-locais {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-height: 250px;
-  overflow-y: auto;
-  padding-right: 5px;
-  margin-top: 16px;
-}
-
-.lista-locais .check-item {
-  display: flex;
+/* ================= TAGS (INTERESSES) ================= */
+.tag-check {
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-  background: rgba(255,255,255,0.05);
-  padding: 12px;
-  border-radius: 10px;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 20px;
   cursor: pointer;
-  border: 1px solid rgba(255,255,255,0.1);
-  transition: 0.2s;
-  color: #e2e8f0;
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #94a3b8;
+  transition: all 0.2s;
 }
 
-.lista-locais .check-item:hover {
-  background: rgba(59, 130, 246, 0.1);
-  border-color: #3b82f6;
+.tag-check input[type="checkbox"] {
+  display: none;
 }
 
-.lista-locais input[type="radio"] {
-  accent-color: #3b82f6;
-  transform: scale(1.2);
+.tag-check:has(input:checked) {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: #10b981;
+  color: #10b981;
+}
+
+.tag-filtro.btn-primary {
+  background: #10b981 !important;
+  color: white !important;
+  border-color: #10b981 !important;
+}
+
+.tag-filtro.btn-secondary {
+  background: #334155 !important;
+  color: #e2e8f0 !important;
+  border-color: #334155 !important;
 }

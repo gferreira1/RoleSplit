@@ -23,10 +23,13 @@ let acaoPendentePosLogin = null;
 let senhaReauth = '';
 let excluirEmAndamento = false;
 
-// Variáveis de Filtro (Declaradas APENAS UMA VEZ aqui)
+let perfilPublicoEmail = ''; // Guarda o email do perfil que está aberto
+
+// Variáveis de Filtro
 let termoBusca = '';
 let filtroCidadeAtual = 'todas';
 let filtroLocalAtual = 'todos';
+let filtroTagsAtuais = [];
 
 // ============ HELPERS ============
 function imagemValida(url) {
@@ -179,7 +182,7 @@ function escutarRolesFirebase() {
       roles = [...eventosCidade, ...rolesPublicos];
       roles.sort((a, b) => Number(a.data) - Number(b.data));
 
-      aplicarFiltros(); // Chama a função de filtro
+      aplicarFiltros(); 
 
       if (document.getElementById('tela-meus').classList.contains('ativa')) renderizarMeusRoles();
       if (roleSelecionadoId) abrirModalDetalhes(roleSelecionadoId);
@@ -190,42 +193,29 @@ function escutarRolesFirebase() {
   });
 }
 
-// ============ LÓGICA DE FILTROS E BUSCA (DINÂMICA) ============
+// ============ LÓGICA DE FILTROS E BUSCA ============
 window.abrirModalFiltros = function() {
   const selectCidade = document.getElementById('filtroCidadeSelect');
   
-  // Limpa o select antes de preencher
   selectCidade.innerHTML = '';
 
-  // Extrai cidades únicas do Firebase (da variável global 'roles')
   const cidadesSet = new Set();
-  
-  // Se a lista global 'roles' estiver vazia, tenta usar 'todosOsRoles'
   const listaBase = (typeof roles !== 'undefined' && roles.length > 0) ? roles : todosOsRoles;
 
   if (listaBase && listaBase.length > 0) {
     listaBase.forEach(r => {
       let cid = r.cidade;
-      
-      // Se for role de amigo e não tiver cidade, define Santa Cruz como padrão
       if (!cid && r.tipo !== 'evento-cidade') cid = 'Santa Cruz do Sul'; 
       
       if (cid) {
-        // Limpa o nome: tira o " - RS", tira espaços extras e deixa a primeira letra maiúscula
         let nomeLimpo = cid.replace(/- RS/gi, '').trim();
         nomeLimpo = nomeLimpo.charAt(0).toUpperCase() + nomeLimpo.slice(1).toLowerCase();
-        
-        // Padroniza Santa Cruz para não duplicar
-        if (nomeLimpo.toLowerCase().includes('santa cruz')) {
-          nomeLimpo = 'Santa Cruz do Sul';
-        }
-        
+        if (nomeLimpo.toLowerCase().includes('santa cruz')) nomeLimpo = 'Santa Cruz do Sul';
         cidadesSet.add(nomeLimpo);
       }
     });
   }
 
-  // Monta as opções no select
   let opcoesHTML = `<option value="todas">Todas as cidades</option>`;
   
   if (cidadesSet.size === 0) {
@@ -239,12 +229,22 @@ window.abrirModalFiltros = function() {
   selectCidade.innerHTML = opcoesHTML;
   selectCidade.value = filtroCidadeAtual;
 
-  // Chama a função que preenche o select de locais baseado na cidade selecionada
   atualizarLocaisPorCidade(); 
   
-  // Abre o modal
+  // Restaura o estado visual das tags
+  document.querySelectorAll('.tag-filtro').forEach(btn => {
+    if (filtroTagsAtuais.includes(btn.dataset.tag)) {
+      btn.classList.add('btn-primary');
+      btn.classList.remove('btn-secondary');
+    } else {
+      btn.classList.remove('btn-primary');
+      btn.classList.add('btn-secondary');
+    }
+  });
+
   document.getElementById('modalFiltros').classList.add('ativo');
 };
+
 window.atualizarLocaisPorCidade = function() {
   const cidadeSelecionada = document.getElementById('filtroCidadeSelect').value;
   const selectLocal = document.getElementById('filtroLocalSelect');
@@ -265,7 +265,12 @@ window.atualizarLocaisPorCidade = function() {
   });
   
   selectLocal.innerHTML = opcoesHTML;
-  selectLocal.value = filtroLocalAtual; // Mantém o que estava selecionado se ainda existir
+  selectLocal.value = filtroLocalAtual; 
+};
+
+window.toggleTagFiltro = function(btn) {
+  btn.classList.toggle('btn-primary'); 
+  btn.classList.toggle('btn-secondary');
 };
 
 window.fecharModalFiltros = function() {
@@ -274,7 +279,13 @@ window.fecharModalFiltros = function() {
 
 window.salvarFiltros = function() {
   filtroCidadeAtual = document.getElementById('filtroCidadeSelect').value;
-  filtroLocalAtual = document.getElementById('filtroLocalSelect').value; // Pega do select
+  filtroLocalAtual = document.getElementById('filtroLocalSelect').value;
+  
+  filtroTagsAtuais = [];
+  document.querySelectorAll('.tag-filtro.btn-primary').forEach(btn => {
+    filtroTagsAtuais.push(btn.dataset.tag);
+  });
+
   fecharModalFiltros();
   aplicarFiltros();
 };
@@ -285,6 +296,13 @@ window.limparFiltros = function() {
   termoBusca = '';
   filtroCidadeAtual = 'todas';
   filtroLocalAtual = 'todos';
+  filtroTagsAtuais = [];
+  
+  document.querySelectorAll('.tag-filtro').forEach(btn => {
+    btn.classList.remove('btn-primary');
+    btn.classList.add('btn-secondary');
+  });
+
   fecharModalFiltros();
   aplicarFiltros();
 };
@@ -293,7 +311,7 @@ window.aplicarFiltros = function() {
   const inputBusca = document.getElementById('inputBusca');
   termoBusca = inputBusca ? inputBusca.value.toLowerCase() : '';
 
-  if (!termoBusca && filtroCidadeAtual === 'todas' && filtroLocalAtual === 'todos') {
+  if (!termoBusca && filtroCidadeAtual === 'todas' && filtroLocalAtual === 'todos' && filtroTagsAtuais.length === 0) {
     renderizarEventos(roles);
     return;
   }
@@ -302,22 +320,26 @@ window.aplicarFiltros = function() {
     const isEvento = item.tipo === 'evento-cidade';
     const nomeMatch = (item.nome || '').toLowerCase().includes(termoBusca);
     
-    // Filtro de Cidade
     let cidadeMatch = true;
     if (filtroCidadeAtual !== 'todas') {
       const cidadeDoItem = (item.cidade || (isEvento ? '' : 'santa cruz do sul')).toLowerCase();
       cidadeMatch = cidadeDoItem.includes(filtroCidadeAtual);
     }
 
-    // Filtro de Local
     let localMatch = true;
     if (filtroLocalAtual !== 'todos') {
-      if (!isEvento) return false; // Roles não têm local fixo
+      if (!isEvento) return false; 
       const localDoEvento = (item.local || '').toLowerCase();
       localMatch = localDoEvento.includes(filtroLocalAtual);
     }
 
-    return nomeMatch && cidadeMatch && localMatch;
+    let tagsMatch = true;
+    if (filtroTagsAtuais.length > 0) {
+      const tagsDoItem = item.tags || [];
+      tagsMatch = filtroTagsAtuais.some(tag => tagsDoItem.includes(tag));
+    }
+
+    return nomeMatch && cidadeMatch && localMatch && tagsMatch;
   });
 
   filtrados.sort((a, b) => Number(a.data) - Number(b.data));
@@ -354,16 +376,19 @@ window.trocarModalAuth = function(qual) {
 };
 
 window.fecharModalAuth = function() {
-  // 1. Fecha os modais
   document.getElementById('modalLogin').classList.remove('ativo');
   document.getElementById('modalCadastro').classList.remove('ativo');
   
-  // 2. Limpa a ação pendente (para não tentar fazer nada depois)
-  acaoPendentePosLogin = null;
-  
-  // 3. FORÇA o retorno para a Home
-  irAba('home');
+  // Se a ação era seguir, NÃO manda para a Home, deixa ele no perfil
+  if (acaoPendentePosLogin && acaoPendentePosLogin.tipo === 'seguir') {
+    acaoPendentePosLogin = null;
+    toast('Login cancelado. Explore à vontade!');
+  } else {
+    acaoPendentePosLogin = null;
+    irAba('home');
+  }
 };
+
 window.fazerLogin = async function() {
   const email = document.getElementById('loginEmail').value.trim();
   const senha = document.getElementById('loginSenha').value;
@@ -411,6 +436,14 @@ window.fazerCadastro = async function() {
     usuarioAtual = nomeCompleto;
     usuarioEmail = email;
     localStorage.setItem('rolesplit_usuario', nomeCompleto);
+    
+    // Cria o documento do usuário na coleção 'usuarios'
+    await setDoc(doc(db, "usuarios", email), {
+      nome: nomeCompleto,
+      seguidores: [],
+      seguindo: []
+    });
+
     document.getElementById('cadNome').value = '';
     document.getElementById('cadSobrenome').value = '';
     document.getElementById('cadEmail').value = '';
@@ -446,12 +479,147 @@ window.fazerLogout = async function() {
 function executarAcao(acao) {
   if (acao === 'criar') irAba('criar');
   else if (acao === 'meus') irAba('meus');
-  else if (acao && typeof acao === 'object' && acao.tipo === 'entrar') {
-    entrarNoRole(acao.roleId);
+  else if (acao && typeof acao === 'object') {
+    if (acao.tipo === 'entrar') {
+      entrarNoRole(acao.roleId);
+    } 
+    else if (acao.tipo === 'seguir') {
+      abrirPerfilPublico(acao.email, acao.nome).then(() => {
+        toggleSeguir();
+      });
+    }
   }
 }
 
-// ============ PERFIL ============
+// ============ PERFIL PÚBLICO E SEGUIDORES ============
+window.abrirPerfilAdmin = function() {
+  const r = todosOsRoles.find(x => x.id == roleSelecionadoId) || roles.find(x => x.id == roleSelecionadoId);
+  if (r && r.adminEmail) {
+    fecharModalDetalhes();
+    abrirPerfilPublico(r.adminEmail, r.admin);
+  } else {
+    toast('Esse usuário não tem perfil público.', true);
+  }
+};
+
+window.abrirPerfilPublico = async function(email, nome) {
+  perfilPublicoEmail = email;
+  
+  document.getElementById('pubPerfilNome').innerText = nome;
+  document.getElementById('pubPerfilEmail').innerText = email;
+  document.getElementById('pubPerfilAvatar').innerText = nome.charAt(0).toUpperCase();
+  
+  try {
+    const snap = await getDoc(doc(db, "usuarios", email));
+    let dados = { seguidores: [], seguindo: [] };
+    
+    if (snap.exists()) {
+      dados = snap.data();
+    } else {
+      await setDoc(doc(db, "usuarios", email), {
+        nome: nome,
+        seguidores: [],
+        seguindo: []
+      });
+    }
+    
+    document.getElementById('pubPerfilSeguidores').innerText = (dados.seguidores || []).length;
+    document.getElementById('pubPerfilSeguindo').innerText = (dados.seguindo || []).length;
+    
+    const euSigo = (dados.seguidores || []).includes(usuarioEmail);
+    atualizarBotaoSeguir(euSigo);
+    
+    const rolesDaPessoa = todosOsRoles.filter(r => 
+      r.adminEmail === email || (r.participantesEmails || []).includes(email)
+    );
+    
+    document.getElementById('pubPerfilRoles').innerText = rolesDaPessoa.length;
+
+    const lista = document.getElementById('pubPerfilRolesLista');
+    if (rolesDaPessoa.length === 0) {
+      lista.innerHTML = '<div class="empty" style="padding: 20px;">Nenhum role público no momento.</div>';
+    } else {
+      lista.innerHTML = rolesDaPessoa.map(r => `
+        <div class="card-mini" style="margin-bottom: 8px;" onclick="fecharPerfilPublico(); abrirModalDetalhes('${r.id}')">
+          <div class="conteudo" style="padding: 10px;">
+            <div class="titulo">${r.nome}</div>
+            <div class="data">📅 ${formatarData(r.data)}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('modalPerfilPublico').classList.add('ativo');
+    
+  } catch (error) {
+    console.error("Erro ao carregar perfil:", error);
+    toast('Erro ao carregar perfil.', true);
+  }
+};
+
+window.fecharPerfilPublico = function() {
+  document.getElementById('modalPerfilPublico').classList.remove('ativo');
+};
+
+function atualizarBotaoSeguir(euSigo) {
+  const btn = document.getElementById('btnSeguir');
+  if (euSigo) {
+    btn.innerText = '✅ Seguindo';
+    btn.classList.remove('btn-primary');
+    btn.classList.add('btn-secondary');
+  } else {
+    btn.innerText = '➕ Seguir';
+    btn.classList.remove('btn-secondary');
+    btn.classList.add('btn-primary');
+  }
+}
+
+window.toggleSeguir = async function() {
+  if (!usuarioLogado) { 
+    pedirLogin({ tipo: 'seguir', email: perfilPublicoEmail, nome: document.getElementById('pubPerfilNome').innerText }); 
+    return; 
+  }
+  
+  if (perfilPublicoEmail === usuarioEmail) { 
+    toast('Você não pode seguir a si mesmo!', true); 
+    return; 
+  }
+
+  const btn = document.getElementById('btnSeguir');
+  const euSigo = btn.innerText.includes('Seguindo');
+  
+  const refMeu = doc(db, "usuarios", usuarioEmail);
+  const refDele = doc(db, "usuarios", perfilPublicoEmail);
+
+  try {
+    const meuSnap = await getDoc(refMeu);
+    if (!meuSnap.exists()) {
+      await setDoc(refMeu, { nome: usuarioAtual, seguidores: [], seguindo: [] });
+    }
+
+    if (euSigo) {
+      await updateDoc(refMeu, { seguindo: arrayRemove(perfilPublicoEmail) });
+      await updateDoc(refDele, { seguidores: arrayRemove(usuarioEmail) });
+      toast('Você deixou de seguir.');
+      atualizarBotaoSeguir(false);
+    } else {
+      await updateDoc(refMeu, { seguindo: arrayUnion(perfilPublicoEmail) });
+      await updateDoc(refDele, { seguidores: arrayUnion(usuarioEmail) });
+      toast('✅ Agora você segue essa pessoa!');
+      atualizarBotaoSeguir(true);
+    }
+    
+    const snapAtualizado = await getDoc(refDele);
+    if (snapAtualizado.exists()) {
+      document.getElementById('pubPerfilSeguidores').innerText = (snapAtualizado.data().seguidores || []).length;
+    }
+    
+  } catch (e) {
+    toast('Erro ao seguir: ' + e.message, true);
+  }
+};
+
+// ============ PERFIL (MEU) ============
 function atualizarPerfilUI() {
   const c = document.getElementById('perfilConteudo');
   if (!c) return;
@@ -606,7 +774,19 @@ window.abrirModalDetalhes = function(id) {
 
   document.getElementById('detalhesBanner').style.backgroundImage = `url('${imagemValida(r.imagem)}')`;
   document.getElementById('detalhesTitulo').innerText = r.nome;
-  document.getElementById('detalhesAdmin').innerText = `Por ${r.admin || 'Desconhecido'}${ehAdmin ? ' (você 👑)' : ''}`;
+  
+  // Nome clicável
+  document.getElementById('detalhesAdminNome').innerText = `${r.admin || 'Desconhecido'}${ehAdmin ? ' (você 👑)' : ''}`;
+  
+  // Descrição
+  const txtDesc = document.getElementById('detalhesDescricao');
+  if (r.descricao && r.descricao.trim() !== '') {
+    txtDesc.innerText = `"${r.descricao}"`;
+    txtDesc.style.display = 'block';
+  } else {
+    txtDesc.style.display = 'none';
+  }
+
   document.getElementById('detalhesDataHora').innerText = formatarDataLong(r.data);
   document.getElementById('detalhesLocal').innerText = r.local || 'Não informado';
   document.getElementById('detalhesCidade').innerText = r.cidade || 'Não informada';
@@ -614,6 +794,14 @@ window.abrirModalDetalhes = function(id) {
   document.getElementById('detalhesCodigo').innerText = isEvento ? 'EVENTO OFICIAL' : (r.codigo || '---');
   document.getElementById('detalhesVagasTexto').innerText = isEvento ? 'Evento Aberto' : `${parts.length} / ${vagas}`;
   document.getElementById('detalhesBarraFill').style.width = isEvento ? '100%' : pct + '%';
+
+  // TAGS NO DETALHE
+  const divTags = document.getElementById('detalhesTags');
+  if (r.tags && r.tags.length > 0) {
+    divTags.innerHTML = r.tags.map(t => `<span style="background: rgba(16,185,129,0.2); color: #10b981; font-size: 11px; font-weight: 800; padding: 4px 8px; border-radius: 6px;">${t}</span>`).join('');
+  } else {
+    divTags.innerHTML = '';
+  }
 
   const av = document.getElementById('detalhesAvatares');
   let htmlAv = parts.slice(0, 6).map(n => {
@@ -1006,6 +1194,10 @@ function atualizarPreview() {
 document.getElementById('formCriarRole').addEventListener('submit', async (e) => {
   e.preventDefault();
   if (!usuarioLogado) { pedirLogin('criar'); return; }
+  
+  const tagsSelecionadas = [];
+  document.querySelectorAll('.tag-criar:checked').forEach(cb => tagsSelecionadas.push(cb.value));
+
   const codigo = gerarCodigo();
   const imagem = document.getElementById('novoImagemSelect').value;
   const novo = {
@@ -1014,8 +1206,10 @@ document.getElementById('formCriarRole').addEventListener('submit', async (e) =>
     data: new Date(document.getElementById('novoData').value).getTime(),
     vagas: parseInt(document.getElementById('novoVagas').value),
     imagem: imagem,
+    descricao: document.getElementById('novaDescricao') ? document.getElementById('novaDescricao').value : '',
     local: document.getElementById('novoLocal').value || '',
     cidade: document.getElementById('novoCidade').value || '',
+    tags: tagsSelecionadas,
     admin: usuarioAtual,
     adminEmail: usuarioEmail,
     participantes: [usuarioAtual],
@@ -1180,6 +1374,11 @@ async function executarExclusao(senha) {
         } catch (e) { console.warn('Erro removendo de role:', e); }
       }
     }
+    // Remove o documento do usuário também
+    try {
+      await deleteDoc(doc(db, "usuarios", usuarioEmail));
+    } catch (e) { console.warn('Erro removendo perfil:', e); }
+
     await deleteUser(user);
     localStorage.clear();
     toast('✅ Conta excluída.');
